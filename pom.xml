@@ -13,6 +13,7 @@
     <name>Explore With Me</name>
     <modules>
         <module>statistics-service</module>
+        <module>ewm-service</module>
     </modules>
 
     <groupId>ru.practicum</groupId>
@@ -43,12 +44,6 @@
                 <groupId>ch.qos.logback</groupId>
                 <artifactId>logback-classic</artifactId>
                 <version>1.5.18</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.hibernate.orm</groupId>
-                <artifactId>hibernate-core</artifactId>
-                <version>6.3.0.Final</version>
             </dependency>
 
             <dependency>

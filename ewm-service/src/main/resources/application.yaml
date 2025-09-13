@@ -1,15 +1,15 @@
 server:
-  port: 9090
+  port: 8080
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/statistics_db
-    username: sa
-    password: sa
+    url: jdbc:postgresql://localhost:5433/_db
+    username: _sa
+    password: _sa
     driver-class-name: org.postgresql.Driver
   jpa:
 
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     show-sql: true
     format_sql: true
     properties:
