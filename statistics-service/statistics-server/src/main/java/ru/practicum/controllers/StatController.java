@@ -1,9 +1,7 @@
 package ru.practicum.controllers;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
@@ -16,18 +14,15 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
-/**
- * Контроллер сущности Stat.
- */
+
 @Validated
+@Slf4j
 @RestController
 public class StatController {
     private final StatService statService;
 
-    private static final Logger log = LoggerFactory.getLogger(StatController.class);
-
     @Autowired
-    public StatController(@Qualifier("StatServiceImpl") StatService statService) {
+    public StatController(StatService statService) {
         this.statService = statService;
     }
 
@@ -38,10 +33,13 @@ public class StatController {
     }
 
     @GetMapping("/stats")
-    public Collection<ViewStatsDto> getStats(@RequestParam(name = "start") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime start,
-                                             @RequestParam(name = "end") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime end,
+    public Collection<ViewStatsDto> getStats(@RequestParam(name = "start")
+                                             @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime start,
+                                             @RequestParam(name = "end")
+                                             @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime end,
                                              @RequestParam(name = "uris", required = false) List<String> uris,
-                                             @RequestParam(name = "unique", required = false, defaultValue = "false") Boolean unique) {
+                                             @RequestParam(name = "unique", required = false,
+                                                     defaultValue = "false") Boolean unique) {
         return statService.getStats(start, end, uris, unique);
     }
 }

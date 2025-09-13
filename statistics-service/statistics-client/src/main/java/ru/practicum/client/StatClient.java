@@ -11,6 +11,8 @@ import ru.practicum.exception.StatsClientException;
 import ru.practicum.statistics.dto.EndpointHitDto;
 import ru.practicum.statistics.dto.ViewStatsDto;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -56,6 +58,9 @@ public class StatClient {
         DateTimeFormatter dateTimeFormated = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         validateGetStatsParam(start, end);
 
+        var startEncoded = URLEncoder.encode(start.format(dateTimeFormated), StandardCharsets.UTF_8);
+        var endEncoded = URLEncoder.encode(end.format(dateTimeFormated), StandardCharsets.UTF_8);
+
         try {
             log.info("Запрос статистики: start={}, end={}, uris={}, unique={}",
                     start, end, uris, unique);
@@ -64,8 +69,8 @@ public class StatClient {
                     .get()
                     .uri(uriBuilder -> uriBuilder
                             .path("/stats")
-                            .queryParam("start", start.format(dateTimeFormated))
-                            .queryParam("end", end.format(dateTimeFormated))
+                            .queryParam("start", startEncoded)
+                            .queryParam("end", endEncoded)
                             .queryParamIfPresent("uris", Optional.ofNullable(uris).filter(list -> !list.isEmpty()))
                             .queryParam("unique", unique)
                             .build())
@@ -80,7 +85,6 @@ public class StatClient {
         }
     }
 
-    //валидация параметров запроса статистики
     private void validateGetStatsParam(LocalDateTime start, LocalDateTime end) {
         if (start == null) {
             throw new IllegalArgumentException("Дата начала не может быть нулевой");
