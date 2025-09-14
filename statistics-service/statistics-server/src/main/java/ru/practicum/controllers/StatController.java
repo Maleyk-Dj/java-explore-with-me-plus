@@ -20,6 +20,7 @@ import java.util.List;
 @RestController
 public class StatController {
     private final StatService statService;
+    private static final String DATE_TAME_FORMAT_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
     @Autowired
     public StatController(StatService statService) {
@@ -34,9 +35,9 @@ public class StatController {
 
     @GetMapping("/stats")
     public Collection<ViewStatsDto> getStats(@RequestParam(name = "start")
-                                             @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime start,
+                                             @DateTimeFormat(pattern = DATE_TAME_FORMAT_PATTERN) LocalDateTime start,
                                              @RequestParam(name = "end")
-                                             @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime end,
+                                             @DateTimeFormat(pattern = DATE_TAME_FORMAT_PATTERN) LocalDateTime end,
                                              @RequestParam(name = "uris", required = false) List<String> uris,
                                              @RequestParam(name = "unique", required = false,
                                                      defaultValue = "false") Boolean unique) {
