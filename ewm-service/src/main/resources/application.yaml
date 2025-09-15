@@ -1,0 +1,27 @@
+server:
+  port: 8080
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5433/_db
+    username: _sa
+    password: _sa
+    driver-class-name: org.postgresql.Driver
+  jpa:
+
+    hibernate:
+      ddl-auto: create
+    show-sql: true
+    format_sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+logging:
+  level:
+    org:
+      springframework:
+        orm:
+          jpa: INFO
+          JpaTransactionManager: DEBUG
+        transaction: INFO
+        transaction.interceptor: TRACE
