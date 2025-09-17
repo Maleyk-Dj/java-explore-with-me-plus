@@ -5,6 +5,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
 import ru.practicum.category.dto.CategoryDto;
 import ru.practicum.category.dto.NewCategoryDto;
 import ru.practicum.category.dto.UpdateCategoryDto;
@@ -15,6 +17,8 @@ import ru.practicum.exception.DuplicatedDataException;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.util.Reflection;
 
+@Service
+@Qualifier("CategoryServiceImpl")
 public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
