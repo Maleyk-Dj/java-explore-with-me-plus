@@ -6,4 +6,5 @@ public final class Constants {
 
     public static final int LENGTH_NAME_CATEGORY_MIN = 1;
     public static final int LENGTH_NAME_CATEGORY_MAX = 50;
+    public static final String PATH_VARIABLE_ID = "id";
 }
