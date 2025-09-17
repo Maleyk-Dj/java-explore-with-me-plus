@@ -4,11 +4,14 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.category.dto.CategoryDto;
 import ru.practicum.category.dto.NewCategoryDto;
 import ru.practicum.category.dto.UpdateCategoryDto;
+import ru.practicum.category.service.CategoryService;
 import ru.practicum.validation.Marker;
 
 import static ru.practicum.util.Constants.PATH_VARIABLE_ID;
@@ -17,7 +20,14 @@ import static ru.practicum.util.Constants.PATH_VARIABLE_ID;
 @RestController
 @RequestMapping("/admin/categories")
 public class CategoryController {
+    private final CategoryService categoryService;
+
     private static final Logger log = LoggerFactory.getLogger(CategoryController.class);
+
+    @Autowired
+    public CategoryController(@Qualifier("CategoryServiceImpl") CategoryService categoryService) {
+        this.categoryService = categoryService;
+    }
 
     @PostMapping
     @Validated(Marker.OnCreate.class)
@@ -27,9 +37,7 @@ public class CategoryController {
 
         log.info("Получен запрос: Добавить новую категорию с name {}", newCategoryDto.getName());
 
-        // return CategoryService.add(newCategoryDto); todo
-
-        return null;
+        return categoryService.add(newCategoryDto);
     }
 
     @PatchMapping("/{id}")
@@ -41,9 +49,7 @@ public class CategoryController {
 
         log.info("Получен запрос: Обновить данные категории с id {}. Установить name {}", categoryId, updateCategoryDto.getName());
 
-        // return CategoryService.update(updateCategoryDto); todo
-
-        return null;
+        return categoryService.update(categoryId, updateCategoryDto);
     }
 
     @DeleteMapping("/{id}")
@@ -53,8 +59,6 @@ public class CategoryController {
         // обработчик выполняется после успешной валидации полей
         log.info("Получен запрос: Удалить категорию с id {}.", categoryId);
 
-        // return CategoryService.delete(categoryId); todo
-
-        return null;
+        return categoryService.delete(categoryId);
     }
 }
