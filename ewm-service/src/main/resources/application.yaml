@@ -2,14 +2,14 @@ server:
   port: 8080
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5433/_db
-    username: _sa
-    password: _sa
+    url: jdbc:postgresql://localhost:5433/ewm
+    username: sa
+    password: sa
     driver-class-name: org.postgresql.Driver
   jpa:
 
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     show-sql: true
     format_sql: true
     properties:
