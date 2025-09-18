@@ -32,11 +32,12 @@ services:
       timeout: 5s
       retries: 10
 
-  ewm-service:
-    build: ewm-service/
-    image: ewm_service:latest
-    ports:
-      - "8080:8080"
+# todo убрал, иначе для отлдадки порт занимает. Вернем при сборке
+  #ewm-service:
+  #  build: ewm-service/
+  #  image: ewm_service:latest
+  #  ports:
+  #    - "8080:8080"
 
   ewm-db:
     image: postgres:16.1
