@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 
 public class ViewStatsDto {
 
-    String app;
-    String uri;
-    long hits;
+    private String app;
+    private String uri;
+    private long hits;
 }

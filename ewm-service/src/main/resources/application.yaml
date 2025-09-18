@@ -2,26 +2,11 @@ server:
   port: 8080
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5433/_db
-    username: _sa
-    password: _sa
-    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5433/ewm
+    username: sa
+    password: sa
   jpa:
+    hibernate.ddl-auto: update
+stats-server:
+  url: ${STATS_SERVER_URL:http://localhost:9090}
 
-    hibernate:
-      ddl-auto: create
-    show-sql: true
-    format_sql: true
-    properties:
-      hibernate:
-        format_sql: true
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-logging:
-  level:
-    org:
-      springframework:
-        orm:
-          jpa: INFO
-          JpaTransactionManager: DEBUG
-        transaction: INFO
-        transaction.interceptor: TRACE
