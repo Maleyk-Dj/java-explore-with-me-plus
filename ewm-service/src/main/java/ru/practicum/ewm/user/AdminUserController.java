@@ -20,7 +20,7 @@ import java.util.List;
 @Slf4j
 public class AdminUserController {
 
-    private final UserServiceImpl userService;
+    private final UserService userService;
 
     // POST /admin/users — добавить нового пользователя
     @PostMapping

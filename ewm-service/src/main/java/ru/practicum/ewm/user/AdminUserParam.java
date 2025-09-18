@@ -8,7 +8,7 @@ import java.util.List;
 
 @Data
 public class AdminUserParam {
-    public List<Long> ids;
+    private List<Long> ids;
     @PositiveOrZero
     private Integer from = 0;
     @Positive
