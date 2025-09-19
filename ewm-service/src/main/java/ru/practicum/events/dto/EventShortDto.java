@@ -1,4 +1,4 @@
-package ru.practicum.dto;
+package ru.practicum.events.dto;
 
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.practicum.category.dto.CategoryDto;
 
 import java.time.LocalDateTime;
 

@@ -1,5 +1,6 @@
-package ru.practicum.dto;
+package ru.practicum.events.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -7,7 +8,7 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.enums.EventStateAction;
+import ru.practicum.events.enums.EventStateAction;
 
 import java.time.LocalDateTime;
 
@@ -23,6 +24,7 @@ public class UpdateEventAdminRequest {
     @Size(min = 20, max = 7000, message = "Описание должно содержать от 20 до 7000 символов")
     private String description;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime eventDate;
 
     private Location location;
