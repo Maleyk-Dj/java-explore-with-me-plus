@@ -6,9 +6,14 @@ import ru.practicum.events.dto.EventFullDto;
 import ru.practicum.events.dto.EventShortDto;
 import ru.practicum.events.dto.Location;
 import ru.practicum.events.model.Event;
+import ru.practicum.ewm.user.dto.UserShortDto;
+
+import java.time.format.DateTimeFormatter;
 
 @Component
 public class EventMapper {
+
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public EventFullDto toEventFullDto(Event event) {
         if (event == null) {
@@ -19,24 +24,22 @@ public class EventMapper {
         dto.setId(event.getId());
         dto.setAnnotation(event.getAnnotation());
 
-        // Создаем CategoryDto через сеттеры
         CategoryDto categoryDto = new CategoryDto();
         categoryDto.setId(event.getCategory().getId());
         categoryDto.setName(event.getCategory().getName());
         dto.setCategory(categoryDto);
 
         dto.setConfirmedRequests(event.getConfirmedRequests());
-        dto.setCreatedOn(String.valueOf(event.getCreatedOn()));
+        dto.setCreatedOn(event.getCreatedOn() != null ?
+                event.getCreatedOn().format(formatter) : null);
         dto.setDescription(event.getDescription());
-        dto.setEventDate(String.valueOf(event.getEventDate()));
+        dto.setEventDate(event.getEventDate().format(formatter));
 
-        // Создаем UserShortDto через сеттеры
         UserShortDto userShortDto = new UserShortDto();
         userShortDto.setId(event.getInitiator().getId());
         userShortDto.setName(event.getInitiator().getName());
         dto.setInitiator(userShortDto);
 
-        // Создаем Location через сеттеры
         Location location = new Location();
         location.setLat(event.getLocationLat());
         location.setLon(event.getLocationLon());
@@ -44,7 +47,8 @@ public class EventMapper {
 
         dto.setPaid(event.getPaid());
         dto.setParticipantLimit(event.getParticipantLimit());
-        dto.setPublishedOn(String.valueOf(event.getPublishedOn()));
+        dto.setPublishedOn(event.getPublishedOn() != null ?
+                event.getPublishedOn().format(formatter) : null);
         dto.setRequestModeration(event.getRequestModeration());
         dto.setState(event.getState().name());
         dto.setTitle(event.getTitle());
@@ -62,7 +66,6 @@ public class EventMapper {
         dto.setId(event.getId());
         dto.setAnnotation(event.getAnnotation());
 
-        // Создаем CategoryDto через сеттеры
         CategoryDto categoryDto = new CategoryDto();
         categoryDto.setId(event.getCategory().getId());
         categoryDto.setName(event.getCategory().getName());
@@ -71,7 +74,6 @@ public class EventMapper {
         dto.setConfirmedRequests(event.getConfirmedRequests());
         dto.setEventDate(event.getEventDate());
 
-        // Создаем UserShortDto через сеттеры
         UserShortDto userShortDto = new UserShortDto();
         userShortDto.setId(event.getInitiator().getId());
         userShortDto.setName(event.getInitiator().getName());

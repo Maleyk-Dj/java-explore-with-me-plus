@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 @Transactional(readOnly = true)
-public class EventServiceImpl implements EventService {
+public class    EventServiceImpl implements EventService {
     private final EventRepository eventRepository;
     private final CategoryRepository categoryRepository;
     private final EventMapper eventMapper;
@@ -48,7 +48,6 @@ public class EventServiceImpl implements EventService {
         Specification<Event> spec = buildAdminSpecification(params);
         Page<Event> events = eventRepository.findAll(spec, pageable);
 
-        // Преобразуем все события одним запросом (без дополнительных запросов в цикле)
         return events.getContent().stream()
                 .map(eventMapper::toEventFullDto)
                 .collect(Collectors.toList());
@@ -60,7 +59,6 @@ public class EventServiceImpl implements EventService {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " not found"));
 
-        // Загружаем категорию только если она указана в запросе
         if (dto.getCategory() != null) {
             Category category = categoryRepository.findById(dto.getCategory())
                     .orElseThrow(() -> new NotFoundException("Category not found"));
@@ -128,7 +126,6 @@ public class EventServiceImpl implements EventService {
     }
 
     private void updateEventFields(Event event, UpdateEventAdminRequest dto) {
-        // Обновляем только те поля, которые пришли в запросе
         if (dto.getAnnotation() != null) {
             validateAnnotation(dto.getAnnotation());
             event.setAnnotation(dto.getAnnotation());
@@ -145,9 +142,8 @@ public class EventServiceImpl implements EventService {
         }
 
         if (dto.getEventDate() != null) {
-            LocalDateTime eventDate = parseDateTime(String.valueOf(dto.getEventDate()));
-            validateEventDate(eventDate);
-            event.setEventDate(eventDate);
+            validateEventDate(dto.getEventDate());
+            event.setEventDate(dto.getEventDate());
         }
 
         if (dto.getLocation() != null) {
