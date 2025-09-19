@@ -1,49 +1,73 @@
 services:
-
-  stats-server:
-    build: statistics-service/statistics-server/
-    image: statistics_service:latest
-    container_name: service
-    environment:
-      - SPRING_DATASOURCE_URL=${STATISTICS_SPRING_DATASOURCE_URL}
-      - SPRING_DATASOURCE_USERNAME=${STATISTICS_POSTGRES_USER}
-      - SPRING_DATASOURCE_PASSWORD=${STATISTICS_POSTGRES_PASSWORD}
-
-    restart: unless-stopped
-
-    depends_on:
-      stats-db:
-        condition: service_healthy
-    ports:
-      - "9090:9090"
-
+  # ---------- STATS DB ----------
   stats-db:
     image: postgres:16.1
+    container_name: stats-db
     environment:
-      POSTGRES_USER: ${STATISTICS_POSTGRES_USER}
-      POSTGRES_PASSWORD: ${STATISTICS_POSTGRES_PASSWORD}
-      POSTGRES_DB: ${STATISTICS_POSTGRES_DB}
+      POSTGRES_USER: ${STATISTICS_POSTGRES_USER:-sa}
+      POSTGRES_PASSWORD: ${STATISTICS_POSTGRES_PASSWORD:-sa}
+      POSTGRES_DB: ${STATISTICS_POSTGRES_DB:-statistics}
     ports:
-      - "${STATISTICS_POSTGRES_PORT}:5432"
-
+      - "${STATISTICS_POSTGRES_PORT:-5432}:5432"
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${STATISTICS_POSTGRES_USER}" ]
+      test: ["CMD-SHELL", "pg_isready -U ${STATISTICS_POSTGRES_USER:-sa} -d ${STATISTICS_POSTGRES_DB:-statistics}"]
       interval: 5s
       timeout: 5s
       retries: 10
+    restart: unless-stopped
 
-# todo убрал, иначе для отлдадки порт занимает. Вернем при сборке
-  #ewm-service:
-  #  build: ewm-service/
-  #  image: ewm_service:latest
-  #  ports:
-  #    - "8080:8080"
-
+  # ---------- EWM DB ----------
   ewm-db:
     image: postgres:16.1
+    container_name: ewm-db
     environment:
-      POSTGRES_USER: ${EWM_POSTGRES_USER}
-      POSTGRES_PASSWORD: ${EWM_POSTGRES_PASSWORD}
-      POSTGRES_DB: ${EWM_POSTGRES_DB}
+      POSTGRES_USER: ${EWM_POSTGRES_USER:-sa}
+      POSTGRES_PASSWORD: ${EWM_POSTGRES_PASSWORD:-sa}
+      POSTGRES_DB: ${EWM_POSTGRES_DB:-ewm}
     ports:
-      - "${EWM_POSTGRES_PORT}:5432"
+      - "${EWM_POSTGRES_PORT:-5433}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${EWM_POSTGRES_USER:-sa} -d ${EWM_POSTGRES_DB:-ewm}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  # ---------- (ОПЦИОНАЛЬНО) STATS SERVER В DOCKER ----------
+  # Раскомментируй этот блок, если захочешь запускать статистику в Docker.
+  # stats-server:
+  #   build: ./statistics-service/statistics-server
+  #   image: statistics_service:latest
+  #   container_name: stats-server
+  #   environment:
+  #     SPRING_DATASOURCE_URL: ${STATISTICS_SPRING_DATASOURCE_URL:-jdbc:postgresql://stats-db:5432/statistics}
+  #     SPRING_DATASOURCE_USERNAME: ${STATISTICS_POSTGRES_USER:-sa}
+  #     SPRING_DATASOURCE_PASSWORD: ${STATISTICS_POSTGRES_PASSWORD:-sa}
+  #   depends_on:
+  #     stats-db:
+  #       condition: service_healthy
+  #   ports:
+  #     - "9090:9090"
+  #   restart: unless-stopped
+
+  # ---------- (ОПЦИОНАЛЬНО) EWM SERVICE В DOCKER ----------
+  # Раскомментируй этот блок, если захочешь собирать и запускать основной сервис в Docker.
+  # ewm-service:
+  #   build: ./ewm-service
+  #   image: ewm_service:latest
+  #   container_name: ewm-service
+  #   environment:
+  #     SPRING_DATASOURCE_URL: jdbc:postgresql://ewm-db:5432/${EWM_POSTGRES_DB:-ewm}
+  #     SPRING_DATASOURCE_USERNAME: ${EWM_POSTGRES_USER:-sa}
+  #     SPRING_DATASOURCE_PASSWORD: ${EWM_POSTGRES_PASSWORD:-sa}
+  #     STATS_SERVER_URL: http://stats-server:9090
+  #   depends_on:
+  #     ewm-db:
+  #       condition: service_healthy
+  #     # если stats-server в Docker — можешь добавить:
+  #     # stats-server:
+  #     #   condition: service_started
+  #   ports:
+  #     - "8080:8080"
+  #   restart: unless-stopped
+

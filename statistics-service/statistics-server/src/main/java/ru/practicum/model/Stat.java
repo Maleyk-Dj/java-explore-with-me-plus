@@ -18,17 +18,17 @@ import java.time.LocalDateTime;
 public class Stat {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    private Long id;
 
     @Column
-    String app;
+    private String app;
 
     @Column
-    String uri;
+    private String uri;
 
     @Column
-    String ip;
+    private String ip;
 
     @Column
-    LocalDateTime created;
+    private LocalDateTime created;
 }

@@ -11,7 +11,7 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class AppUri {
-    String app;
-    String uri;
-    String ip;
+    private String app;
+    private String uri;
+    private String ip;
 }
