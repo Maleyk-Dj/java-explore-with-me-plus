@@ -2,25 +2,29 @@ package ru.practicum.events.service;
 
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.category.model.Category;
 import ru.practicum.category.storage.CategoryRepository;
 import ru.practicum.events.dto.EventFullDto;
+import ru.practicum.events.dto.NewEventDto;
 import ru.practicum.events.dto.UpdateEventAdminRequest;
 import ru.practicum.events.enums.EventState;
 import ru.practicum.events.enums.EventStateAction;
 import ru.practicum.events.mapper.EventMapper;
+import ru.practicum.events.mapper.EventMapperStruct;
 import ru.practicum.events.model.Event;
 import ru.practicum.events.params.AdminEventParams;
 import ru.practicum.events.repository.EventRepository;
+import ru.practicum.ewm.user.UserRepository;
+import ru.practicum.ewm.user.model.User;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
-import lombok.extern.slf4j.Slf4j;
 import ru.practicum.exception.ValidationException;
 
 import java.time.LocalDateTime;
@@ -33,11 +37,13 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-@Transactional(readOnly = true)
-public class    EventServiceImpl implements EventService {
+//@Transactional(readOnly = true)
+public class EventServiceImpl implements EventService {
     private final EventRepository eventRepository;
     private final CategoryRepository categoryRepository;
     private final EventMapper eventMapper;
+    private final EventMapperStruct eventMapperStruct;
+    private final UserRepository userRepository;
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Override
@@ -255,5 +261,22 @@ public class    EventServiceImpl implements EventService {
         if (participantLimit < 0) {
             throw new ValidationException("Participant limit cannot be negative");
         }
+    }
+
+    @Override
+    public EventFullDto add(Long userId, NewEventDto newEventDto) {
+        Category category = categoryRepository.findById(newEventDto.getCategoryId())
+                .orElseThrow(() -> new NotFoundException("Категория с id = " + newEventDto.getCategoryId() + " не найдена.", log));
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + userId + " не найден.", log));
+
+        Event event = eventMapperStruct.toEvent(user, newEventDto, category);
+
+        event = eventRepository.save(event);
+
+        log.info("Добавлено новое событие {}.", event);
+
+        return eventMapper.toEventFullDto(event);
     }
 }
