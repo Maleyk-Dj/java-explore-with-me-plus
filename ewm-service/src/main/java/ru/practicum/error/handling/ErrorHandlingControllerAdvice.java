@@ -8,15 +8,31 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import ru.practicum.ewm.handler.ApiError;
 import ru.practicum.exception.DuplicatedDataException;
 import ru.practicum.exception.NotFoundException;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.stream.Collectors;
+
+import static ru.practicum.util.Constants.STRING_FORMAT_DATE;
 
 @RestControllerAdvice
 public class ErrorHandlingControllerAdvice {
     private static final Logger log = LoggerFactory.getLogger(ErrorHandlingControllerAdvice.class);
+
+    private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern(STRING_FORMAT_DATE);
+
+    private ApiError api(HttpStatus status, String reason, String message, List<String> errors) {
+        return new ApiError(
+                errors == null ? List.of() : errors,
+                message,
+                reason,
+                status.name(),
+                LocalDateTime.now().format(FMT)
+        );
+    }
 
     /**
      * Отлавливаю исключения типа ConstraintViolationException, ошибка в параметрах запроса, параметрах пути.
@@ -27,19 +43,17 @@ public class ErrorHandlingControllerAdvice {
 
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ValidationErrorResponse onConstraintValidationException(ConstraintViolationException e) {
-        final List<Violation> violations = e.getConstraintViolations().stream()
-                .map(
-                        violation -> new Violation(
-                                violation.getPropertyPath().toString(),
-                                violation.getMessage()
-                        )
-                )
-                .collect(Collectors.toList());
-
-        log.error("Ошибка валидации: {}", violations);
-
-        return new ValidationErrorResponse(violations);
+    public ApiError onConstraintValidationException(ConstraintViolationException e) {
+        log.warn("400 {}", e.getMessage());
+        String message = e.getConstraintViolations().stream()
+                .findFirst()
+                .map(fe -> "Field: %s. Error: %s. Value: %s"
+                        .formatted(fe.getPropertyPath().toString(), fe.getMessage(), fe.getInvalidValue()))
+                .orElse("Validation failed");
+        return api(HttpStatus.BAD_REQUEST,
+                "Incorrectly made request.",
+                message,
+                null);
     }
 
     /**
@@ -50,41 +64,39 @@ public class ErrorHandlingControllerAdvice {
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ValidationErrorResponse onMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+    public ApiError onMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         // проверяем, наличие ошибок при валидации значений в полях объекта
-        List<Violation> violations = e.getBindingResult().getFieldErrors().stream()
-                .map(error -> new Violation(error.getField(), error.getDefaultMessage()))
-                .collect(Collectors.toList());
-
-        // если ошибок валидации значений в полях объекта нет, но исключение выброшено, значит валидация уровня типа (класса)
-        if (violations.isEmpty()) {
-            violations = e.getAllErrors().stream()
-                    .map(error -> new Violation("-", error.getDefaultMessage()))
-                    .collect(Collectors.toList());
-        }
-
-        log.error("Объект не прошел валидацию: {}", violations);
-
-        return new ValidationErrorResponse(violations);
+        log.warn("400 {}", e.getMessage());
+        String message = e.getBindingResult().getFieldErrors().stream()
+                .findFirst()
+                .map(fe -> "Field: %s. Error: %s. Value: %s"
+                        .formatted(fe.getField(), fe.getDefaultMessage(), fe.getRejectedValue()))
+                .orElse("Validation failed");
+        return api(HttpStatus.BAD_REQUEST,
+                "Incorrectly made request.",
+                message,
+                null);
     }
 
     @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ValidationErrorResponse onNotFoundException(NotFoundException e) {
-        // todo переделать на формат который на вебинаре
+    public ApiError onNotFoundException(NotFoundException e) {
+        log.warn("404 {}", e.getMessage());
 
-        Violation violation = new Violation("-", e.getMessage());
-        List<Violation> violationList = List.of(violation);
-
-        return new ValidationErrorResponse(violationList);
+        return api(HttpStatus.NOT_FOUND,
+                "The required object was not found.",
+                e.getMessage(),
+                null);
     }
 
     @ExceptionHandler(DuplicatedDataException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ValidationErrorResponse onDuplicatedDataException(DuplicatedDataException e) {
-        Violation violation = new Violation("-", e.getMessage());
-        List<Violation> violationList = List.of(violation);
+    public ApiError onDuplicatedDataException(DuplicatedDataException e) {
+        log.warn("409 {}", e.getMessage());
 
-        return new ValidationErrorResponse(violationList);
+        return api(HttpStatus.CONFLICT,
+                "Duplication of an object.",
+                e.getMessage(),
+                null);
     }
 }
