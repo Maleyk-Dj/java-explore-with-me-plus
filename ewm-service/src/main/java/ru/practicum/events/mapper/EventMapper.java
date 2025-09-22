@@ -57,7 +57,7 @@ public class EventMapper {
         return dto;
     }
 
-    public EventShortDto toEventShortDto(Event event) {
+    public static EventShortDto toEventShortDto(Event event) {
         if (event == null) {
             return null;
         }
