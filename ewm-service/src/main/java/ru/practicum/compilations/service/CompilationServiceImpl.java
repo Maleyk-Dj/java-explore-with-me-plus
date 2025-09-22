@@ -1,0 +1,116 @@
+package ru.practicum.compilations.service;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.compilations.dto.CompilationDto;
+import ru.practicum.compilations.dto.NewCompilationDto;
+import ru.practicum.compilations.dto.UpdateCompilationRequest;
+import ru.practicum.compilations.mapper.CompilationMapper;
+import ru.practicum.compilations.model.Compilation;
+import ru.practicum.compilations.params.PublicCompilationsParams;
+import ru.practicum.compilations.repository.CompilationRepository;
+import ru.practicum.events.model.Event;
+import ru.practicum.events.repository.EventRepository;
+import ru.practicum.ewm.handler.exception.NotFoundException;
+
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class CompilationServiceImpl implements CompilationService {
+
+    private final CompilationRepository compilationRepository;
+    private final EventRepository eventRepository;
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CompilationDto> findCompilations(PublicCompilationsParams params) {
+        log.info("Поиск подборок событий: закрепленные={}, from={}, size={}",
+                params.getPinned(), params.getFrom(), params.getSize());
+
+        PageRequest pageRequest = PageRequest.of(
+                params.getFrom() / params.getSize(),
+                params.getSize()
+        );
+
+        List<Compilation> compilations;
+        if (params.getPinned() != null) {
+            compilations = compilationRepository.findByPinned(params.getPinned(), pageRequest);
+        } else {
+            compilations = compilationRepository.findAll(pageRequest).getContent();
+        }
+
+        return compilations.stream()
+                .map(CompilationMapper::toCompilationDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public CompilationDto findCompilationById(Long compId) {
+        log.info("Поиск подборки по ID: {}", compId);
+
+        Compilation compilation = compilationRepository.findById(compId)
+                .orElseThrow(() -> new NotFoundException("Compilation with id=" + compId + " was not found"));
+
+        return CompilationMapper.toCompilationDto(compilation);
+    }
+
+    @Override
+    @Transactional
+    public CompilationDto addCompilation(NewCompilationDto dto) {
+        log.info("Добавление новой подборки: {}", dto);
+
+        Set<Event> events = getEventsFromIds(dto.getEvents());
+        Compilation compilation = CompilationMapper.toCompilation(dto, events);
+        Compilation savedCompilation = compilationRepository.save(compilation);
+
+        log.info("Подборка успешно добавлена id: {}", savedCompilation.getId());
+        return CompilationMapper.toCompilationDto(savedCompilation);
+    }
+
+    @Override
+    @Transactional
+    public CompilationDto updateCompilation(Long compId, UpdateCompilationRequest dto) {
+        log.info("Обновление подборки: ID={}, новые данные={}", compId, dto);
+
+        Compilation compilation = compilationRepository.findById(compId)
+                .orElseThrow(() -> new NotFoundException("Compilation with id=" + compId + " was not found"));
+
+        Set<Event> events = null;
+        if (dto.getEvents() != null) {
+            events = getEventsFromIds(dto.getEvents());
+        }
+
+        CompilationMapper.updateCompilationFromDto(dto, compilation, events);
+        Compilation updatedCompilation = compilationRepository.save(compilation);
+
+        log.info("Подборка с ID {} успешно обновлена", compId);
+        return CompilationMapper.toCompilationDto(updatedCompilation);
+    }
+
+    @Override
+    @Transactional
+    public void removeCompilation(Long compId) {
+        log.info("Удаление подборки: ID={}", compId);
+
+        if (!compilationRepository.existsById(compId)) {
+            throw new NotFoundException("Compilation with id=" + compId + " was not found");
+        }
+
+        compilationRepository.deleteById(compId);
+        log.info("Подборка с ID {} успешно удалена", compId);
+    }
+
+    private Set<Event> getEventsFromIds(List<Long> eventIds) {
+        if (eventIds == null || eventIds.isEmpty()) {
+            return Set.of();
+        }
+        return eventRepository.findAllById(eventIds);
+    }
+}
