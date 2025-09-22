@@ -16,13 +16,13 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-import static ru.practicum.util.Constants.STRING_FORMAT_DATE;
+import static ru.practicum.util.Constants.PATTERN_FORMATE_DATE;
 
 @RestControllerAdvice
 public class ErrorHandlingControllerAdvice {
     private static final Logger log = LoggerFactory.getLogger(ErrorHandlingControllerAdvice.class);
 
-    private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern(STRING_FORMAT_DATE);
+    private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern(PATTERN_FORMATE_DATE);
 
     private ApiError api(HttpStatus status, String reason, String message, List<String> errors) {
         return new ApiError(
