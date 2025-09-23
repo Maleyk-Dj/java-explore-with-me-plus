@@ -29,8 +29,8 @@ public class StatController {
 
     @PostMapping("/hit")
     @ResponseStatus(HttpStatus.CREATED)
-    public EndpointHitDto hit(@RequestBody EndpointHitDto request) {
-        return statService.hit(request);
+    public void hit(@RequestBody EndpointHitDto request) {
+        statService.hit(request);
     }
 
     @GetMapping("/stats")

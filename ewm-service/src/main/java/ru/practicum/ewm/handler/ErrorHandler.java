@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.practicum.ewm.handler.exception.ConflictException;
 import ru.practicum.ewm.handler.exception.NotFoundException;
+import ru.practicum.ewm.handler.exception.ValidationException;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -47,6 +48,16 @@ public class ErrorHandler {
         return api(HttpStatus.CONFLICT,
                 "Integrity constraint has been violated.",
                 e.getMessage(),
+                null);
+    }
+
+    @ExceptionHandler(ValidationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiError handleValidationException(final ValidationException ex) {
+        log.warn("400 {}", ex.getMessage());
+        return api(HttpStatus.BAD_REQUEST,
+                "Incorrectly made request.",
+                ex.getMessage(),
                 null);
     }
 
