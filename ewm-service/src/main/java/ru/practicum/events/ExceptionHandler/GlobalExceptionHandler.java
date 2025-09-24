@@ -4,7 +4,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import ru.practicum.ewm.handler.exception.ForbiddenOperationException;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.exception.ValidationException;
@@ -44,6 +46,10 @@ public class GlobalExceptionHandler {
         ApiError apiError = new ApiError("Bad Request", "Validation failed", HttpStatus.BAD_REQUEST, errors);
         return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(ForbiddenOperationException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ApiError handleForbiddenOperationException(ForbiddenOperationException ex) {
+        return new ApiError("For the requested operation the conditions are not met.", ex.getMessage(), HttpStatus.FORBIDDEN);
+    }
 }
-
-

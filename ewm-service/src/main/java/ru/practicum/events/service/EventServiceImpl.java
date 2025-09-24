@@ -3,6 +3,7 @@ package ru.practicum.events.service;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -14,6 +15,7 @@ import ru.practicum.category.storage.CategoryRepository;
 import ru.practicum.events.dto.EventFullDto;
 import ru.practicum.events.dto.NewEventDto;
 import ru.practicum.events.dto.UpdateEventAdminRequest;
+import ru.practicum.events.dto.UpdateEventUserRequest;
 import ru.practicum.events.enums.EventState;
 import ru.practicum.events.enums.EventStateAction;
 import ru.practicum.events.mapper.EventMapper;
@@ -26,6 +28,7 @@ import ru.practicum.ewm.user.model.User;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.exception.ValidationException;
+import ru.practicum.util.Reflection;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -278,5 +281,31 @@ public class EventServiceImpl implements EventService {
         log.info("Добавлено новое событие {}.", event);
 
         return eventMapper.toEventFullDto(event);
+    }
+
+    @Override
+    public EventFullDto update(Long userId, Long eventId, UpdateEventUserRequest updateEventUserRequest) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + userId + " не найден.", log));
+
+        Event oldEvent = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Событие с id = " + eventId + " не найдено.", log));
+
+        Event newEvent = eventMapperStruct.toEvent(user, eventId, updateEventUserRequest);
+
+        if (updateEventUserRequest.getCategoryId() != null) {
+            Category category = categoryRepository.findById(updateEventUserRequest.getCategoryId())
+                    .orElseThrow(() -> new NotFoundException("Категория с id = " + updateEventUserRequest.getCategoryId() + " не найдена.", log));
+
+            newEvent.setCategory(category);
+        }
+
+        BeanUtils.copyProperties(newEvent, oldEvent, Reflection.getIgnoreProperties(newEvent));
+
+        eventRepository.save(oldEvent);
+
+        log.info("Пользователем обновлены данные события {}.", oldEvent);
+
+        return eventMapper.toEventFullDto(oldEvent);
     }
 }

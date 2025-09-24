@@ -8,6 +8,7 @@ import org.mapstruct.factory.Mappers;
 import ru.practicum.category.mapper.CategoryMapper;
 import ru.practicum.category.model.Category;
 import ru.practicum.events.dto.NewEventDto;
+import ru.practicum.events.dto.UpdateEventUserRequest;
 import ru.practicum.events.enums.EventState;
 import ru.practicum.events.model.Event;
 import ru.practicum.ewm.user.model.User;
@@ -37,4 +38,11 @@ public interface EventMapperStruct {
     default LocalDateTime getCreatedOn(NewEventDto newEventDto) {
         return LocalDateTime.now();
     }
+
+    @Mapping(source = "eventId", target = "id")
+    @Mapping(source = "updateEventUserRequest.location.lat", target = "locationLat")
+    @Mapping(source = "updateEventUserRequest.location.lon", target = "locationLon")
+    @Mapping(source = "user", target = "initiator")
+    @Mapping(source = "updateEventUserRequest.stateAction", target = "state")
+    Event toEvent(User user, Long eventId, UpdateEventUserRequest updateEventUserRequest);
 }
