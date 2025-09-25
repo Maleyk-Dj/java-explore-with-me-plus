@@ -6,6 +6,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface RequestRepository extends JpaRepository<Request, Long> {
@@ -25,4 +26,15 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
             "where r.event.id in :eventIds and r.status = 'CONFIRMED' " +
             "group by r.event.id")
     List<ConfirmedCount> countConfirmedForEventIds(@Param("eventIds") List<Long> eventIds);
+    // Находит все заявки для определенного пользователя
+    List<Request> findByRequesterId(Long requesterId);
+
+    // Находит конкретную заявку для определенного пользователя и заявки
+    Optional<Request> findByRequesterIdAndId(Long requesterId, Long requestId);
+
+    // Находит все заявки на участие в событии
+    List<Request> findByEventId(Long eventId);
+
+    // Подсчитывает количество подтвержденных заявок на участие в событии
+    Long countByEventIdAndStatus(Long eventId, String status);
 }
