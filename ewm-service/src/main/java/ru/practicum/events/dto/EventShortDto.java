@@ -30,8 +30,7 @@ public class EventShortDto {
     private Integer confirmedRequests;
 
     @NotNull(message = "Дата события не может быть пустой")
-    @Future(message = "Дата события должна не должна быть раньше даты начала")
-    private LocalDateTime eventDate;
+    private String eventDate;
 
     @NotNull(message = "Инициатор не может быть равен null")
     private UserShortDto initiator;

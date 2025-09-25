@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class CompilationMapper {
+    private static EventMapper eventMapper;
     public static Compilation toCompilation(NewCompilationDto dto, Set<Event> events) {
         return Compilation.builder()
                 .pinned(dto.getPinned() != null ? dto.getPinned() : false)
@@ -23,7 +24,7 @@ public class CompilationMapper {
 
     public static CompilationDto toCompilationDto(Compilation compilation) {
         List<EventShortDto> eventDtos = compilation.getEvents().stream()
-                .map(EventMapper::toEventShortDto)
+                .map(eventMapper::toEventShortDto)
                 .collect(Collectors.toList());
 
         return CompilationDto.builder()
