@@ -18,12 +18,12 @@ public class EventFullDto {
     private CategoryDto category;
     private Integer confirmedRequests;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING,pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private String createdOn;
 
     private String description;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING,pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private String eventDate;
 
     private UserShortDto initiator;
@@ -31,7 +31,7 @@ public class EventFullDto {
     private Boolean paid;
     private Integer participantLimit;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING,pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private String publishedOn;
 
     private Boolean requestModeration;

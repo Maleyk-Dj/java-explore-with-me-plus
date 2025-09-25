@@ -1,6 +1,5 @@
 package ru.practicum.events.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.validation.constraints.Size;
@@ -9,10 +8,7 @@ import lombok.Data;
 import lombok.experimental.FieldDefaults;
 import ru.practicum.events.convertors.StringToEventStateConverter;
 import ru.practicum.events.enums.EventState;
-import ru.practicum.validation.EventDate;
 import ru.practicum.validation.Marker;
-
-import java.time.LocalDateTime;
 
 import static ru.practicum.util.Constants.*;
 
@@ -30,10 +26,7 @@ public class UpdateEventUserRequest {
     @Size(min = LENGTH_DESCRIPTION_EVENT_MIN, max = LENGTH_DESCRIPTION_EVENT_MAX, message = "Длина описания события не прошла валидацию.", groups = Marker.OnUpdate.class)
     String description;
 
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    @JsonFormat(pattern = PATTERN_FORMATE_DATE)
-    @EventDate(groups = Marker.OnUpdate.class)
-    LocalDateTime eventDate;
+    String eventDate;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     LocationDto location;

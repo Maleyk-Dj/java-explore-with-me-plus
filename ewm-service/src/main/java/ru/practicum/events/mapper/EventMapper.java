@@ -33,7 +33,7 @@ public class EventMapper {
         dto.setCreatedOn(event.getCreatedOn() != null ?
                 event.getCreatedOn().format(formatter) : null);
         dto.setDescription(event.getDescription());
-        dto.setEventDate(event.getEventDate().format(formatter));
+        dto.setEventDate(event.getEventDate().format(formatter)); // Здесь форматирование работает
 
         UserShortDto userShortDto = new UserShortDto();
         userShortDto.setId(event.getInitiator().getId());
@@ -57,7 +57,7 @@ public class EventMapper {
         return dto;
     }
 
-    public static EventShortDto toEventShortDto(Event event) {
+    public EventShortDto toEventShortDto(Event event) {
         if (event == null) {
             return null;
         }
@@ -72,8 +72,7 @@ public class EventMapper {
         dto.setCategory(categoryDto);
 
         dto.setConfirmedRequests(event.getConfirmedRequests());
-        dto.setEventDate(event.getEventDate());
-
+        dto.setEventDate(event.getEventDate().format(formatter));
         UserShortDto userShortDto = new UserShortDto();
         userShortDto.setId(event.getInitiator().getId());
         userShortDto.setName(event.getInitiator().getName());
