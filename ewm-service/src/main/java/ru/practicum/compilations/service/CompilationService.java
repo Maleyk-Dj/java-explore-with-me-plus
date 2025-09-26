@@ -17,4 +17,5 @@ public interface CompilationService {
     CompilationDto addCompilation(NewCompilationDto dto);
     CompilationDto updateCompilation(Long compId, UpdateCompilationRequest dto);
     void removeCompilation(Long compId);
+
 }
