@@ -62,4 +62,12 @@ public class EventsPrivateController {
 
         return eventService.findAllByUser(userId, from, size);
     }
+
+    @GetMapping("/{eventId}")
+    EventFullDto findById(@PathVariable(name = PATH_VARIABLE_USER_ID) @Positive Long userId,
+                          @PathVariable(name = PATH_VARIABLE_EVENT_ID) @Positive Long eventId) {
+        log.info("Получен запрос: Получить данные по событию c id = {} у пользователя с id = {}.", eventId, userId);
+
+        return eventService.findByUserAndEvent(userId, eventId);
+    }
 }

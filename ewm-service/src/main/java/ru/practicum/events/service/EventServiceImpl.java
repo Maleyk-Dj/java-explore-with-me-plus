@@ -506,4 +506,17 @@ public class EventServiceImpl implements EventService {
                 .map(eventMapper::toEventShortDto)
                 .toList();
     }
+
+    @Override
+    public EventFullDto findByUserAndEvent(Long userId, Long eventId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + userId + " не найден.", log));
+
+        Event event = eventRepository.findByInitiatorAndId(user, eventId)
+                .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found", log));
+
+        log.info("Получены данные по событию c id = {} у пользователя с id = {}.", eventId, userId);
+
+        return eventMapper.toEventFullDto(event);
+    }
 }

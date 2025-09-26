@@ -21,4 +21,6 @@ public interface EventService {
     List<EventShortDto> searchPublicEvents(PublicEventParams params, HttpServletRequest request);
 
     List<EventShortDto> findAllByUser(Long userId, int from, int size);
+
+    EventFullDto findByUserAndEvent(Long userId, Long eventId);
 }
