@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.category.dto.CategoryDto;
 import ru.practicum.category.dto.NewCategoryDto;
 import ru.practicum.category.service.CategoryService;
+import ru.practicum.validation.Marker;
 
 import java.util.List;
 
@@ -22,6 +23,7 @@ public class AdminCategoryController {
     private final CategoryService categoryService;
 
     // POST /admin/categories
+    @Validated(Marker.OnCreate.class)
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public CategoryDto createCategory(@Valid @RequestBody NewCategoryDto newCategoryDto) {
@@ -29,6 +31,7 @@ public class AdminCategoryController {
     }
 
     // PATCH /admin/categories/{catId}
+    @Validated(Marker.OnUpdate.class)
     @PatchMapping("/{catId}")
     @ResponseStatus(HttpStatus.OK)
     public CategoryDto updateCategory(@PathVariable @Positive Long catId,
