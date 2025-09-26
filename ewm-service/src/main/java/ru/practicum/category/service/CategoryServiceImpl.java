@@ -1,12 +1,7 @@
 package ru.practicum.category.service;
 
-import io.micrometer.common.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -18,9 +13,7 @@ import ru.practicum.category.model.Category;
 import ru.practicum.category.storage.CategoryRepository;
 import ru.practicum.events.repository.EventRepository;
 import ru.practicum.ewm.handler.exception.ConflictException;
-import ru.practicum.exception.DuplicatedDataException;
 import ru.practicum.exception.NotFoundException;
-import ru.practicum.util.Reflection;
 
 import java.util.List;
 import java.util.stream.Collectors;

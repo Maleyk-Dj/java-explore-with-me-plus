@@ -9,9 +9,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.practicum.ewm.handler.ApiError;
+import ru.practicum.ewm.handler.exception.ConflictException;
 import ru.practicum.exception.DuplicatedDataException;
 import ru.practicum.exception.NotFoundException;
-import ru.practicum.ewm.handler.exception.ConflictException;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

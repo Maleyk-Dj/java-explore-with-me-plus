@@ -1,10 +1,8 @@
 package ru.practicum.category.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import ru.practicum.validation.FieldDescription;
 
 
 @Data
