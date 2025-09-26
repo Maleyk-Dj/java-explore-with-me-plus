@@ -1,6 +1,5 @@
 package ru.practicum.events.dto;
 
-import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -10,8 +9,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.practicum.category.dto.CategoryDto;
 import ru.practicum.ewm.user.dto.UserShortDto;
-
-import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor

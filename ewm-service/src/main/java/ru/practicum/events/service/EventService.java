@@ -16,8 +16,13 @@ public interface EventService {
     public EventFullDto add(Long userId, NewEventDto newEventDto);
 
     public EventFullDto update(Long userId, Long eventId, UpdateEventUserRequest updateEventUserRequest);
+
     EventFullDto getPublicEventById(Long eventId, HttpServletRequest request);
 
     List<EventShortDto> searchPublicEvents(PublicEventParams params, HttpServletRequest request);
     ParticipationRequestDto rejectRequest(Long userId, Long eventId, Long requestId);
+
+    List<EventShortDto> findAllByUser(Long userId, int from, int size);
+
+    EventFullDto findByUserAndEvent(Long userId, Long eventId);
 }

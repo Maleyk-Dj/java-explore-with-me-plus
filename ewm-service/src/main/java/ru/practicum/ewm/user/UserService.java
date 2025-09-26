@@ -2,7 +2,6 @@ package ru.practicum.ewm.user;
 
 import ru.practicum.ewm.user.dto.NewUserRequest;
 import ru.practicum.ewm.user.dto.UserDto;
-import ru.practicum.request.dto.ParticipationRequestDto;
 
 import java.util.List;
 

@@ -19,4 +19,8 @@ public final class Constants {
     public static final String PATTERN_FORMATE_DATE = "yyyy-MM-dd HH:mm:ss";
     public static final String VALUE_SEND_TO_REVIEW = "SEND_TO_REVIEW";
     public static final String VALUE_CANCEL_REVIEW = "CANCEL_REVIEW";
+    public static final String REQUEST_PARAM_FROM = "from";
+    public static final String DEFAULT_VALUE_0 = "0";
+    public static final String REQUEST_PARAM_SIZE = "size";
+    public static final String DEFAULT_VALUE_REQUEST_PARAM_SIZE = "10";
 }
