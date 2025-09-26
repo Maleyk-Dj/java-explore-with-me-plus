@@ -14,6 +14,7 @@ import ru.practicum.events.dto.EventShortDto;
 import ru.practicum.events.dto.NewEventDto;
 import ru.practicum.events.dto.UpdateEventUserRequest;
 import ru.practicum.events.service.EventService;
+import ru.practicum.request.dto.ParticipationRequestDto;
 import ru.practicum.validation.Marker;
 
 import java.util.Collection;
@@ -52,6 +53,13 @@ public class EventsPrivateController {
         log.info("Получен запрос: Обновить событие пользователем {}", updateEventUserRequest.getAnnotation());
 
         return eventService.update(userId, eventId, updateEventUserRequest);
+    }
+    @PatchMapping("/{eventId}/requests")
+    @ResponseStatus(HttpStatus.OK)
+    public ParticipationRequestDto rejectRequest(@PathVariable @Positive Long userId,
+                                                 @PathVariable @Positive Long eventId,
+                                                 @RequestParam @Positive Long requestId) {
+        return eventService.rejectRequest(userId, eventId, requestId);
     }
 
     @GetMapping

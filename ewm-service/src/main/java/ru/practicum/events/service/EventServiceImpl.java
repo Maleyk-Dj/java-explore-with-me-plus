@@ -31,9 +31,8 @@ import ru.practicum.ewm.user.model.User;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.exception.ValidationException;
-import ru.practicum.request.ConfirmedCount;
-import ru.practicum.request.Request;
-import ru.practicum.request.RequestRepository;
+import ru.practicum.request.*;
+import ru.practicum.request.dto.ParticipationRequestDto;
 import ru.practicum.statistics.dto.EndpointHitDto;
 import ru.practicum.statistics.dto.ViewStatsDto;
 import ru.practicum.util.Reflection;
@@ -57,6 +56,7 @@ public class EventServiceImpl implements EventService {
     private final UserRepository userRepository;
     private final StatClient statClient;
     private final RequestRepository requestRepository;
+    private final RequestMapper requestMapper;
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private static final LocalDateTime EPOCH = LocalDateTime.of(1970, 1, 1, 0, 0);
 
@@ -306,6 +306,36 @@ public class EventServiceImpl implements EventService {
 
             return cb.and(predicates.toArray(new Predicate[0]));
         };
+    }
+    @Override
+    @Transactional
+    public ParticipationRequestDto rejectRequest(Long userId, Long eventId, Long requestId) {
+        // 1. Проверяем, что событие существует
+        eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found."));
+
+        // 2. Находим запрос на участие по его ID и ID события
+        Request request = requestRepository.findById(requestId)
+                .orElseThrow(() -> new NotFoundException("Request with id=" + requestId + " was not found."));
+
+        // 3. Дополнительные проверки (бизнес-логика):
+        //    - Убеждаемся, что запрос принадлежит нужному событию
+        if (!request.getEvent().getId().equals(eventId)) {
+            throw new ConflictException("Request with id=" + requestId + " is not for event id=" + eventId);
+        }
+        //    - Проверяем, что запрос еще не подтвержден
+        if (request.getStatus() == RequestStatus.CONFIRMED) {
+            throw new ConflictException("Cannot reject an already confirmed request.");
+        }
+
+        // 4. Изменяем статус запроса на REJECTED
+        request.setStatus(RequestStatus.REJECTED);
+
+        // 5. Сохраняем изменения в базе данных
+        Request rejectedRequest = requestRepository.save(request);
+
+        // 6. Возвращаем DTO-объект
+        return requestMapper.toParticipationRequestDto(rejectedRequest);
     }
 
     private void updateEventFields(Event event, UpdateEventAdminRequest dto) {
