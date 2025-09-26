@@ -14,10 +14,12 @@ import static ru.practicum.util.Constants.LENGTH_NAME_CATEGORY_MAX;
 import static ru.practicum.util.Constants.LENGTH_NAME_CATEGORY_MIN;
 
 @Data
+@EqualsAndHashCode(of = {"name"})
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class NewCategoryDto {
-
-    @NotBlank(message = "Name cannot be blank")
-    @Size(min = 1, max = 50, message = "Name must be between 1 and 50 characters")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @Size(min = LENGTH_NAME_CATEGORY_MIN, max = LENGTH_NAME_CATEGORY_MAX, groups = Marker.OnCreate.class)
+    @NotBlank(message = "При создании категории должно быть указано ее наименование.", groups = Marker.OnCreate.class)
+    @FieldDescription("Наименование категории")
     String name;
 }
