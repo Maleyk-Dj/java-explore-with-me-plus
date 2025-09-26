@@ -2,6 +2,7 @@ package ru.practicum.events;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,13 +10,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.events.dto.EventFullDto;
+import ru.practicum.events.dto.EventShortDto;
 import ru.practicum.events.dto.NewEventDto;
 import ru.practicum.events.dto.UpdateEventUserRequest;
 import ru.practicum.events.service.EventService;
 import ru.practicum.validation.Marker;
 
-import static ru.practicum.util.Constants.PATH_VARIABLE_EVENT_ID;
-import static ru.practicum.util.Constants.PATH_VARIABLE_USER_ID;
+import java.util.Collection;
+
+import static ru.practicum.util.Constants.*;
 
 @Validated
 @RestController
@@ -49,5 +52,14 @@ public class EventsPrivateController {
         log.info("Получен запрос: Обновить событие пользователем {}", updateEventUserRequest.getAnnotation());
 
         return eventService.update(userId, eventId, updateEventUserRequest);
+    }
+
+    @GetMapping
+    public Collection<EventShortDto> findAll(@PathVariable(name = PATH_VARIABLE_USER_ID) @Positive Long userId,
+                                             @RequestParam(name = REQUEST_PARAM_FROM, defaultValue = DEFAULT_VALUE_0) @PositiveOrZero int from,
+                                             @RequestParam(name = REQUEST_PARAM_SIZE, defaultValue = DEFAULT_VALUE_REQUEST_PARAM_SIZE) @Positive int size) {
+        log.info("Получен запрос: Получить список событий пользователя c id = {} в количестве size = {} с отступом from = {}", userId, size, from);
+
+        return eventService.findAllByUser(userId, from, size);
     }
 }
