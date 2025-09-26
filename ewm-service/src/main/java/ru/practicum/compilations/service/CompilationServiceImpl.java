@@ -15,6 +15,7 @@ import ru.practicum.events.model.Event;
 import ru.practicum.events.repository.EventRepository;
 import ru.practicum.ewm.handler.exception.NotFoundException;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -26,6 +27,8 @@ public class CompilationServiceImpl implements CompilationService {
 
     private final CompilationRepository compilationRepository;
     private final EventRepository eventRepository;
+    private final CompilationMapper compilationMapper; // <-- Внедряем компонент
+
 
     @Override
     @Transactional(readOnly = true)
@@ -46,7 +49,7 @@ public class CompilationServiceImpl implements CompilationService {
         }
 
         return compilations.stream()
-                .map(CompilationMapper::toCompilationDto)
+                .map(compilationMapper::toCompilationDto)
                 .collect(Collectors.toList());
     }
 
@@ -58,7 +61,7 @@ public class CompilationServiceImpl implements CompilationService {
         Compilation compilation = compilationRepository.findById(compId)
                 .orElseThrow(() -> new NotFoundException("Compilation with id=" + compId + " was not found"));
 
-        return CompilationMapper.toCompilationDto(compilation);
+        return compilationMapper.toCompilationDto(compilation);
     }
 
     @Override
@@ -67,11 +70,11 @@ public class CompilationServiceImpl implements CompilationService {
         log.info("Добавление новой подборки: {}", dto);
 
         Set<Event> events = getEventsFromIds(dto.getEvents());
-        Compilation compilation = CompilationMapper.toCompilation(dto, events);
+        Compilation compilation = compilationMapper.toCompilation(dto, events);
         Compilation savedCompilation = compilationRepository.save(compilation);
 
         log.info("Подборка успешно добавлена id: {}", savedCompilation.getId());
-        return CompilationMapper.toCompilationDto(savedCompilation);
+        return compilationMapper.toCompilationDto(savedCompilation);
     }
 
     @Override
@@ -91,7 +94,7 @@ public class CompilationServiceImpl implements CompilationService {
         Compilation updatedCompilation = compilationRepository.save(compilation);
 
         log.info("Подборка с ID {} успешно обновлена", compId);
-        return CompilationMapper.toCompilationDto(updatedCompilation);
+        return compilationMapper.toCompilationDto(updatedCompilation);
     }
 
     @Override
@@ -111,6 +114,34 @@ public class CompilationServiceImpl implements CompilationService {
         if (eventIds == null || eventIds.isEmpty()) {
             return Set.of();
         }
-        return eventRepository.findAllById(eventIds);
+        // 1. Очистка списка от null и дубликатов, чтобы избежать NPE в репозитории
+        Set<Long> uniqueEventIds = new HashSet<>(eventIds);
+        uniqueEventIds.remove(null);
+
+        if (uniqueEventIds.isEmpty()) {
+            return Set.of();
+        }
+
+        // 2. Получение найденных событий
+        List<Event> foundEvents = eventRepository.findAllById(uniqueEventIds);
+
+        // 3. КРИТИЧЕСКАЯ ПРОВЕРКА (Исправляет логическую ошибку):
+        // Если количество найденных событий не совпадает с запрошенным, выбрасываем 404.
+        if (foundEvents.size() != uniqueEventIds.size()) {
+
+            Set<Long> foundIds = foundEvents.stream()
+                    .map(Event::getId)
+                    .collect(Collectors.toSet());
+
+            String missingIds = uniqueEventIds.stream()
+                    .filter(id -> !foundIds.contains(id))
+                    .map(String::valueOf)
+                    .collect(Collectors.joining(", "));
+
+            // Ваш @ControllerAdvice преобразует это в 404 NOT FOUND
+            throw new NotFoundException("Events with IDs not found: " + missingIds);
+        }
+
+        return new HashSet<>(foundEvents);
     }
 }
