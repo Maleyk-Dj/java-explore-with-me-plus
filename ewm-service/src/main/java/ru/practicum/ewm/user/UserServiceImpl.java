@@ -4,22 +4,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.events.model.Event;
-import ru.practicum.events.repository.EventRepository;
 import ru.practicum.ewm.handler.exception.ConflictException;
 import ru.practicum.ewm.handler.exception.NotFoundException;
 import ru.practicum.ewm.user.dto.NewUserRequest;
 import ru.practicum.ewm.user.dto.UserDto;
 import ru.practicum.ewm.user.model.User;
-import ru.practicum.request.Request;
-import ru.practicum.request.RequestMapper;
-import ru.practicum.request.RequestRepository;
-import ru.practicum.request.RequestStatus;
-import ru.practicum.request.dto.ParticipationRequestDto;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
