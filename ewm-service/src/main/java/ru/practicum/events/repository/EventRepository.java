@@ -19,4 +19,6 @@ public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecific
     List<Event> findByInitiatorOrderByIdAsc(User user);
 
     Optional<Event> findByInitiatorAndId(User user, Long eventId);
+
+    Long countByCategoryId(Long categoryId);
 }

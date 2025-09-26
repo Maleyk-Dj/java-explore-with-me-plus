@@ -1,26 +1,42 @@
 package ru.practicum.category.mapper;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingConstants;
-import org.mapstruct.factory.Mappers;
+import org.springframework.stereotype.Component;
 import ru.practicum.category.dto.CategoryDto;
 import ru.practicum.category.dto.NewCategoryDto;
-import ru.practicum.category.dto.UpdateCategoryDto;
 import ru.practicum.category.model.Category;
-import ru.practicum.mapper.IgnoreUnmappedMapperConfig;
 
-@Mapper(componentModel = MappingConstants.ComponentModel.SPRING, config = IgnoreUnmappedMapperConfig.class)
-public interface CategoryMapper {
-    CategoryMapper INSTANCE = Mappers.getMapper(CategoryMapper.class);
+@Component
+public class CategoryMapper {
 
-    @Mapping(ignore = true, target = "id")
-    @Mapping(source = "newCategoryDto.name", target = "name")
-    Category toCategory(NewCategoryDto newCategoryDto);
+    /**
+     * Преобразует NewCategoryDto в сущность Category.
+     * @param newCategoryDto DTO с данными для новой категории.
+     * @return Сущность Category.
+     */
+    public Category toCategory(NewCategoryDto newCategoryDto) {
+        if (newCategoryDto == null) {
+            return null;
 
-    @Mapping(source = "categoryId", target = "id")
-    @Mapping(source = "updateCategoryDto.name", target = "name")
-    Category toCategory(Long categoryId, UpdateCategoryDto updateCategoryDto);
+        }
 
-    CategoryDto toCategoryDto(Category category);
+        Category category = new Category();
+        category.setName(newCategoryDto.getName());
+        return category;
+    }
+
+    /**
+     * Преобразует сущность Category в CategoryDto.
+     * @param category Сущность Category.
+     * @return DTO с полной информацией о категории.
+     */
+    public CategoryDto toCategoryDto(Category category) {
+        if (category == null) {
+            return null;
+        }
+
+        return CategoryDto.builder()
+                .id(category.getId())
+                .name(category.getName())
+                .build();
+    }
 }
