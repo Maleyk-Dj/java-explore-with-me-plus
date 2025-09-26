@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.practicum.ewm.handler.ApiError;
 import ru.practicum.exception.DuplicatedDataException;
 import ru.practicum.exception.NotFoundException;
+import ru.practicum.ewm.handler.exception.ConflictException;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -96,6 +97,17 @@ public class ErrorHandlingControllerAdvice {
 
         return api(HttpStatus.CONFLICT,
                 "Duplication of an object.",
+                e.getMessage(),
+                null);
+    }
+
+    @ExceptionHandler(ConflictException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ApiError onConflictException(ConflictException e) {
+        log.warn("409 {}", e.getMessage());
+
+        return api(HttpStatus.CONFLICT,
+                "For the requested operation the conditions are not met.",
                 e.getMessage(),
                 null);
     }

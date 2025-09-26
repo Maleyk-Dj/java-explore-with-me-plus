@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.category.dto.CategoryDto;
@@ -31,6 +32,7 @@ public class CategoryController {
 
     @PostMapping
     @Validated(Marker.OnCreate.class)
+    @ResponseStatus(HttpStatus.CREATED)
     public CategoryDto add(@RequestBody @Valid NewCategoryDto newCategoryDto) {
         // проверку выполнения необходимых условий осуществил через валидацию полей
         // обработчик выполняется после успешной валидации полей
@@ -54,6 +56,7 @@ public class CategoryController {
 
     @DeleteMapping("/{id}")
     @Validated(Marker.OnDelete.class)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public CategoryDto delete(@PathVariable(name = PATH_VARIABLE_ID) @Positive(groups = Marker.OnDelete.class) Long categoryId) {
         // проверку выполнения необходимых условий осуществил через валидацию полей
         // обработчик выполняется после успешной валидации полей

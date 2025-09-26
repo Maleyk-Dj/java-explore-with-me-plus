@@ -307,6 +307,7 @@ public class EventServiceImpl implements EventService {
             return cb.and(predicates.toArray(new Predicate[0]));
         };
     }
+
     @Override
     @Transactional
     public ParticipationRequestDto rejectRequest(Long userId, Long eventId, Long requestId) {
@@ -494,6 +495,9 @@ public class EventServiceImpl implements EventService {
 
         Event oldEvent = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Событие с id = " + eventId + " не найдено.", log));
+
+        if (oldEvent.getState() == EventState.PUBLISHED)
+            throw new ConflictException("Only pending or canceled events can be changed.");
 
         Event newEvent = eventMapperStruct.toEvent(user, eventId, updateEventUserRequest);
 

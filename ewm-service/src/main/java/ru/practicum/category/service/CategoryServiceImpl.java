@@ -13,28 +13,42 @@ import ru.practicum.category.dto.UpdateCategoryDto;
 import ru.practicum.category.mapper.CategoryMapper;
 import ru.practicum.category.model.Category;
 import ru.practicum.category.storage.CategoryRepository;
+import ru.practicum.events.model.Event;
+import ru.practicum.events.repository.EventRepository;
+import ru.practicum.ewm.handler.exception.ConflictException;
 import ru.practicum.exception.DuplicatedDataException;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.util.Reflection;
+
+import java.util.Collection;
 
 @Service
 @Qualifier("CategoryServiceImpl")
 public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
+    private final EventRepository eventRepository;
 
     private static final Logger log = LoggerFactory.getLogger(CategoryService.class);
 
     @Autowired
     public CategoryServiceImpl(CategoryRepository categoryRepository,
-                               CategoryMapper categoryMapper) {
+                               CategoryMapper categoryMapper,
+                               EventRepository eventRepository) {
         this.categoryRepository = categoryRepository;
         this.categoryMapper = categoryMapper;
+        this.eventRepository = eventRepository;
     }
 
     @Override
     public CategoryDto add(NewCategoryDto newCategoryDto) {
         Category category = categoryMapper.toCategory(newCategoryDto);
+
+        if (!StringUtils.isBlank(newCategoryDto.getName())) {
+            if (!isNameFree(newCategoryDto.getName()))
+                throw new DuplicatedDataException("Нельзя обновить данные категории " +
+                        "по причине: нельзя использовать имя (регистр не важен), которое уже используется.", log);
+        }
 
         category = categoryRepository.save(category);
 
@@ -74,7 +88,8 @@ public class CategoryServiceImpl implements CategoryService {
         Category removeCategory = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new NotFoundException("Категория с id = " + categoryId + " не найдена.", log));
 
-        // todo Проверить, что нет связанных событий, прежде чем удалять. Смогу сделать когда эвенты появятся
+        Collection<Event> eventCollection = eventRepository.findByCategory(removeCategory);
+        if (!eventCollection.isEmpty()) throw new ConflictException("The category is not empty");
 
         categoryRepository.delete(removeCategory);
 

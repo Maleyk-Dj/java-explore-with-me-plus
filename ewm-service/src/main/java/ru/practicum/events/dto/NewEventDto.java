@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.Data;
@@ -18,6 +19,12 @@ import static ru.practicum.util.Constants.*;
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class NewEventDto {
+    public NewEventDto() {
+        paid = false;
+        participantLimit = 0L;
+        requestModeration = true;
+    }
+
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Size(min = LENGTH_ANNOTATION_EVENT_MIN, max = LENGTH_ANNOTATION_EVENT_MAX, message = "Длина краткого описания события не прошла валидацию.")
     @NotBlank(message = "Краткое описание события не может быть пустым.", groups = Marker.OnCreate.class)
@@ -41,13 +48,14 @@ public class NewEventDto {
     @NotNull(message = "Нужно указать координаты места события.", groups = Marker.OnCreate.class)
     LocationDto location;
 
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY, defaultValue = "false")
     Boolean paid;
 
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY, defaultValue = "0")
+    @PositiveOrZero(message = "Количество участников не может быть отрицательным.", groups = Marker.OnCreate.class)
     Long participantLimit;
 
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY, defaultValue = "true")
     Boolean requestModeration;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)

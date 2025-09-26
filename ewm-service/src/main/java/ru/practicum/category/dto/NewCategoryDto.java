@@ -1,6 +1,7 @@
 package ru.practicum.category.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.Data;
@@ -18,6 +19,7 @@ import static ru.practicum.util.Constants.LENGTH_NAME_CATEGORY_MIN;
 public class NewCategoryDto {
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Size(min = LENGTH_NAME_CATEGORY_MIN, max = LENGTH_NAME_CATEGORY_MAX, groups = Marker.OnCreate.class)
+    @NotBlank(message = "При создании категории должно быть указано ее наименование.", groups = Marker.OnCreate.class)
     @FieldDescription("Наименование категории")
     String name;
 }
