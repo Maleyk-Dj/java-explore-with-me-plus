@@ -1,5 +1,7 @@
 package ru.practicum.compilations.mapper;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 import ru.practicum.compilations.dto.CompilationDto;
 import ru.practicum.compilations.dto.NewCompilationDto;
 import ru.practicum.compilations.dto.UpdateCompilationRequest;
@@ -12,9 +14,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Component
+@RequiredArgsConstructor
 public class CompilationMapper {
-    private static EventMapper eventMapper;
-    public static Compilation toCompilation(NewCompilationDto dto, Set<Event> events) {
+    private final EventMapper eventMapper;
+
+    public Compilation toCompilation(NewCompilationDto dto, Set<Event> events) {
         return Compilation.builder()
                 .pinned(dto.getPinned() != null ? dto.getPinned() : false)
                 .title(dto.getTitle())
@@ -22,7 +27,7 @@ public class CompilationMapper {
                 .build();
     }
 
-    public static CompilationDto toCompilationDto(Compilation compilation) {
+    public CompilationDto toCompilationDto(Compilation compilation) {
         List<EventShortDto> eventDtos = compilation.getEvents().stream()
                 .map(eventMapper::toEventShortDto)
                 .collect(Collectors.toList());
