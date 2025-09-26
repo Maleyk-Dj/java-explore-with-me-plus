@@ -255,6 +255,30 @@ public class EventServiceImpl implements EventService {
         return dtos;
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<ParticipationRequestDto> getRequestsByEvent(Long userId, Long eventId) {
+        // 1. Проверяем существование события и принадлежность его пользователю
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found."));
+
+        // Проверка, является ли пользователь инициатором события
+        if (!event.getInitiator().getId().equals(userId)) {
+            throw new ConflictException("User with id=" + userId +
+                    " is not the initiator of event with id=" + eventId);
+        }
+
+        // 2. Получаем все запросы для этого события
+        // (Предполагается, что в RequestRepository есть метод findByEventId)
+        List<Request> requests = requestRepository.findByEventId(eventId);
+
+        // 3. Маппинг и возврат DTO
+        return requests.stream()
+                .map(requestMapper::toParticipationRequestDto)
+                .collect(Collectors.toList());
+    }
+
+
     private Specification<Event> buildAdminSpecification(AdminEventParams params) {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();

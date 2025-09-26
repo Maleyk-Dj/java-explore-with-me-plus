@@ -1,21 +1,21 @@
 package ru.practicum.category.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AccessLevel;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import jakarta.validation.constraints.Size;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 import ru.practicum.validation.FieldDescription;
 
+
 @Data
-@EqualsAndHashCode(of = {"id", "name"})
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CategoryDto {
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    @FieldDescription(value = "Уникальный идентификатор категории", changeByCopy = false)
+
     Long id;
 
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    @FieldDescription("Наименование категории")
+    @Size(min = 1, max = 50, message = "Name must be between 1 and 50 characters")
     String name;
 }

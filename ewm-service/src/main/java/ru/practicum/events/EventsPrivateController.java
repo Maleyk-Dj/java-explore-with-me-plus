@@ -3,6 +3,7 @@ package ru.practicum.events;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,16 +19,16 @@ import ru.practicum.request.dto.ParticipationRequestDto;
 import ru.practicum.validation.Marker;
 
 import java.util.Collection;
+import java.util.List;
 
 import static ru.practicum.util.Constants.*;
 
+@Slf4j
 @Validated
 @RestController
 @RequestMapping("/users/{userId}/events")
 public class EventsPrivateController {
     private final EventService eventService;
-
-    private static final Logger log = LoggerFactory.getLogger(EventsPrivateController.class);
 
     @Autowired
     public EventsPrivateController(EventService eventService) {
@@ -77,5 +78,15 @@ public class EventsPrivateController {
         log.info("Получен запрос: Получить данные по событию c id = {} у пользователя с id = {}.", eventId, userId);
 
         return eventService.findByUserAndEvent(userId, eventId);
+    }
+    // GET /users/{userId}/events/{eventId}/requests
+    @GetMapping("/{eventId}/requests")
+    @ResponseStatus(HttpStatus.OK)
+    public List<ParticipationRequestDto> getEventRequests(
+            @PathVariable @Positive Long userId,
+            @PathVariable @Positive Long eventId) {
+
+        // В сервисе должна быть проверка, что userId является инициатором eventId
+        return eventService.getRequestsByEvent(userId, eventId);
     }
 }

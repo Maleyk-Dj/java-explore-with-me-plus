@@ -25,4 +25,5 @@ public interface EventService {
     List<EventShortDto> findAllByUser(Long userId, int from, int size);
 
     EventFullDto findByUserAndEvent(Long userId, Long eventId);
+    List<ParticipationRequestDto> getRequestsByEvent(Long userId, Long eventId);
 }
