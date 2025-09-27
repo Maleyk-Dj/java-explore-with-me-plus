@@ -33,7 +33,7 @@ public class UpdateEventAdminRequest {
     private LocalDateTime eventDate;
 
     @JsonProperty("location")
-    private Location location;
+    private LocationDto location;
 
     @JsonProperty("paid")
     private Boolean paid;

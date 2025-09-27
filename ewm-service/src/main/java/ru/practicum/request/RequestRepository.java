@@ -36,5 +36,8 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
     List<Request> findByEventId(Long eventId);
 
     // Подсчитывает количество подтвержденных заявок на участие в событии
-    Long countByEventIdAndStatus(Long eventId, String status);
+    Long countByEventIdAndStatus(Long eventId, RequestStatus status);
+
+    // Проверка существования запроса
+    boolean existsByRequesterIdAndEventId(Long requesterId, Long eventId);
 }

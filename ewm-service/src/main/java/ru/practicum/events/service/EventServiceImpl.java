@@ -28,7 +28,7 @@ import ru.practicum.events.params.PublicEventParams;
 import ru.practicum.events.repository.EventRepository;
 import ru.practicum.ewm.user.UserRepository;
 import ru.practicum.ewm.user.model.User;
-import ru.practicum.exception.ConflictException;
+import ru.practicum.ewm.handler.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.exception.ValidationException;
 import ru.practicum.request.*;
@@ -69,9 +69,112 @@ public class EventServiceImpl implements EventService {
         Specification<Event> spec = buildAdminSpecification(params);
         Page<Event> events = eventRepository.findAll(spec, pageable);
 
-        return events.getContent().stream()
-                .map(eventMapper::toEventFullDto)
+        // Получаем ID всех найденных событий
+        List<Long> eventIds = events.getContent().stream()
+                .map(Event::getId)
                 .collect(Collectors.toList());
+
+        // Получаем подтвержденные запросы для всех событий
+        Map<Long, Integer> confirmedRequestsMap = getConfirmedRequestsForEvents(eventIds);
+
+        // Получаем просмотры для всех событий (с обработкой ошибок)
+        Map<Long, Long> viewsMap = getViewsForEvents(eventIds);
+
+        return events.getContent().stream()
+                .map(event -> {
+                    EventFullDto dto = eventMapper.toEventFullDto(event);
+                    dto.setConfirmedRequests(confirmedRequestsMap.getOrDefault(event.getId(), 0));
+                    dto.setViews(viewsMap.getOrDefault(event.getId(), 0L));
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+
+    private Map<Long, Integer> getConfirmedRequestsForEvents(List<Long> eventIds) {
+        if (eventIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        Map<Long, Integer> confirmedMap = new HashMap<>();
+
+        for (Long eventId : eventIds) {
+            try {
+                Integer confirmed = requestRepository.countConfirmedByEventId(eventId);
+                confirmedMap.put(eventId, confirmed != null ? confirmed : 0);
+            } catch (Exception e) {
+                log.warn("Failed to get confirmed requests for event {}: {}", eventId, e.getMessage());
+                confirmedMap.put(eventId, 0);
+            }
+        }
+
+        return confirmedMap;
+    }
+
+    private Map<Long, Long> getViewsForEvents(List<Long> eventIds) {
+        if (eventIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        Map<Long, Long> viewsMap = new HashMap<>();
+
+        // Если сервис статистики недоступен, возвращаем 0 для всех событий
+        for (Long eventId : eventIds) {
+            viewsMap.put(eventId, 0L);
+        }
+
+        // Попытка получить статистику, если сервис доступен
+        try {
+            List<String> uris = eventIds.stream()
+                    .map(id -> "/events/" + id)
+                    .collect(Collectors.toList());
+
+            LocalDateTime start = EPOCH;
+            LocalDateTime end = LocalDateTime.now();
+
+            List<ViewStatsDto> stats = statClient.getStats(start, end, uris, true);
+
+            // Обновляем карту просмотров
+            for (ViewStatsDto stat : stats) {
+                try {
+                    Long eventId = extractEventIdFromUri(stat.getUri());
+                    if (eventId != null) {
+                        viewsMap.put(eventId, stat.getHits());
+                    }
+                } catch (Exception e) {
+                    log.warn("Failed to parse event ID from URI: {}", stat.getUri());
+                }
+            }
+        } catch (Exception ex) {
+            log.warn("Stat service unavailable, using default views (0)");
+            // Оставляем значения по умолчанию (0)
+        }
+
+        return viewsMap;
+    }
+
+    private Long extractEventIdFromUri(String uri) {
+        if (uri == null || !uri.startsWith("/events/")) {
+            return null;
+        }
+        try {
+            return Long.parseLong(uri.substring("/events/".length()));
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private long getEventViews(Long eventId) {
+        try {
+            LocalDateTime start = EPOCH;
+            LocalDateTime end = LocalDateTime.now();
+            List<String> uris = List.of("/events/" + eventId);
+
+            List<ViewStatsDto> stats = statClient.getStats(start, end, uris, true);
+            return stats.stream().mapToLong(ViewStatsDto::getHits).sum();
+        } catch (Exception ex) {
+            log.warn("Failed to fetch views for event {}: {}", eventId, ex.getMessage());
+            return 0L;
+        }
     }
 
     @Override
@@ -120,7 +223,7 @@ public class EventServiceImpl implements EventService {
         List<String> uris = List.of("/events/" + eventId);
         long views = 0L;
         try {
-            List<ViewStatsDto> stats = statClient.getStats(start, end, uris, false);
+            List<ViewStatsDto> stats = statClient.getStats(start, end, uris, true);
             views = stats.stream().mapToLong(ViewStatsDto::getHits).sum();
         } catch (Exception ex) {
             log.warn("Failed to fetch views for event {}: {}", eventId, ex.getMessage());
@@ -242,7 +345,7 @@ public class EventServiceImpl implements EventService {
             }
         }
         List<EventShortDto> dtos = events.stream().map(e -> {
-            EventShortDto s = eventMapper.toEventShortDto(e); // предполагается что есть метод
+            EventShortDto s = eventMapper.toEventShortDto(e);
             s.setViews(viewsMap.getOrDefault(e.getId(), 0L));
             s.setConfirmedRequests(confirmedMap.getOrDefault(e.getId(), 0));
             return s;
@@ -269,7 +372,6 @@ public class EventServiceImpl implements EventService {
         }
 
         // 2. Получаем все запросы для этого события
-        // (Предполагается, что в RequestRepository есть метод findByEventId)
         List<Request> requests = requestRepository.findByEventId(eventId);
 
         // 3. Маппинг и возврат DTO
@@ -279,89 +381,97 @@ public class EventServiceImpl implements EventService {
     }
 
 
-    private Specification<Event> buildAdminSpecification(AdminEventParams params) {
-        return (root, query, cb) -> {
-            List<Predicate> predicates = new ArrayList<>();
+        private Specification<Event> buildAdminSpecification(AdminEventParams params) {
+            return (root, query, cb) -> {
+                List<Predicate> predicates = new ArrayList<>();
 
-            // Фильтр по пользователям
-            if (params.getUsers() != null && !params.getUsers().isEmpty()) {
-                predicates.add(root.get("initiator").get("id").in(params.getUsers()));
-            }
-
-            // Фильтр по состояниям
-            if (params.getStates() != null && !params.getStates().isEmpty()) {
-                List<EventState> eventStates = params.getStates().stream()
-                        .map(state -> {
-                            try {
-                                return EventState.valueOf(state.toUpperCase());
-                            } catch (IllegalArgumentException e) {
-                                throw new ValidationException("Invalid state: " + state);
-                            }
-                        })
-                        .collect(Collectors.toList());
-                predicates.add(root.get("state").in(eventStates));
-            }
-
-            // Фильтр по категориям
-            if (params.getCategories() != null && !params.getCategories().isEmpty()) {
-                predicates.add(root.get("category").get("id").in(params.getCategories()));
-            }
-
-            // Фильтр по дате начала
-            if (params.getRangeStart() != null) {
-                LocalDateTime start = parseDateTime(params.getRangeStart());
-                predicates.add(cb.greaterThanOrEqualTo(root.get("eventDate"), start));
-            }
-
-            // Фильтр по дате окончания
-            if (params.getRangeEnd() != null) {
-                LocalDateTime end = parseDateTime(params.getRangeEnd());
-                predicates.add(cb.lessThanOrEqualTo(root.get("eventDate"), end));
-            }
-
-            // Валидация диапазона дат
-            if (params.getRangeStart() != null && params.getRangeEnd() != null) {
-                LocalDateTime start = parseDateTime(params.getRangeStart());
-                LocalDateTime end = parseDateTime(params.getRangeEnd());
-                if (end.isBefore(start)) {
-                    throw new ValidationException("RangeEnd cannot be before rangeStart");
+                // Фильтр по пользователям
+                if (params.getUsers() != null && !params.getUsers().isEmpty()) {
+                    predicates.add(root.get("initiator").get("id").in(params.getUsers()));
                 }
-            }
 
-            return cb.and(predicates.toArray(new Predicate[0]));
-        };
-    }
+                // Фильтр по состояниям
+                if (params.getStates() != null && !params.getStates().isEmpty()) {
+                    List<EventState> eventStates = params.getStates().stream()
+                            .map(state -> {
+                                try {
+                                    return EventState.valueOf(state.toUpperCase());
+                                } catch (IllegalArgumentException e) {
+                                    throw new ValidationException("Invalid state: " + state);
+                                }
+                            })
+                            .collect(Collectors.toList());
+                    predicates.add(root.get("state").in(eventStates));
+                }
+
+                // Фильтр по категориям
+                if (params.getCategories() != null && !params.getCategories().isEmpty()) {
+                    predicates.add(root.get("category").get("id").in(params.getCategories()));
+                }
+
+                // Фильтр по дате начала
+                if (params.getRangeStart() != null) {
+                    LocalDateTime start = parseDateTime(params.getRangeStart());
+                    predicates.add(cb.greaterThanOrEqualTo(root.get("eventDate"), start));
+                }
+
+                // Фильтр по дате окончания
+                if (params.getRangeEnd() != null) {
+                    LocalDateTime end = parseDateTime(params.getRangeEnd());
+                    predicates.add(cb.lessThanOrEqualTo(root.get("eventDate"), end));
+                }
+
+                // Валидация диапазона дат
+                if (params.getRangeStart() != null && params.getRangeEnd() != null) {
+                    LocalDateTime start = parseDateTime(params.getRangeStart());
+                    LocalDateTime end = parseDateTime(params.getRangeEnd());
+                    if (end.isBefore(start)) {
+                        throw new ValidationException("RangeEnd cannot be before rangeStart");
+                    }
+                }
+
+                return cb.and(predicates.toArray(new Predicate[0]));
+            };
+        }
 
     @Override
     @Transactional
     public ParticipationRequestDto rejectRequest(Long userId, Long eventId, Long requestId) {
-        // 1. Проверяем, что событие существует
-        eventRepository.findById(eventId)
+        // 1. Проверяем, что событие существует и принадлежит пользователю
+        Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found."));
 
-        // 2. Находим запрос на участие по его ID и ID события
+        if (!event.getInitiator().getId().equals(userId)) {
+            throw new ConflictException("User with id=" + userId +
+                    " is not the initiator of event with id=" + eventId);
+        }
+
+        // 2. Находим запрос на участие
         Request request = requestRepository.findById(requestId)
                 .orElseThrow(() -> new NotFoundException("Request with id=" + requestId + " was not found."));
 
-        // 3. Дополнительные проверки (бизнес-логика):
-        //    - Убеждаемся, что запрос принадлежит нужному событию
+        // 3. Проверяем, что запрос принадлежит событию
         if (!request.getEvent().getId().equals(eventId)) {
             throw new ConflictException("Request with id=" + requestId + " is not for event id=" + eventId);
         }
-        //    - Проверяем, что запрос еще не подтвержден
+
+        // 4. ИСПРАВЛЕННАЯ ПРОВЕРКА: нельзя отклонить уже подтвержденный запрос
         if (request.getStatus() == RequestStatus.CONFIRMED) {
-            throw new ConflictException("Cannot reject an already confirmed request.");
+            throw new ConflictException("Cannot reject already confirmed request");
         }
 
-        // 4. Изменяем статус запроса на REJECTED
-        request.setStatus(RequestStatus.REJECTED);
+        // 5. Проверяем, что запрос еще не отклонен
+        if (request.getStatus() == RequestStatus.REJECTED) {
+            throw new ConflictException("Request is already rejected");
+        }
 
-        // 5. Сохраняем изменения в базе данных
+        // 6. Отклоняем запрос
+        request.setStatus(RequestStatus.REJECTED);
         Request rejectedRequest = requestRepository.save(request);
 
-        // 6. Возвращаем DTO-объект
         return requestMapper.toParticipationRequestDto(rejectedRequest);
     }
+
 
     private void updateEventFields(Event event, UpdateEventAdminRequest dto) {
         if (dto.getAnnotation() != null) {
