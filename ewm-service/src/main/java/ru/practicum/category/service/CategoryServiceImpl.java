@@ -11,9 +11,9 @@ import ru.practicum.category.dto.NewCategoryDto;
 import ru.practicum.category.mapper.CategoryMapper;
 import ru.practicum.category.model.Category;
 import ru.practicum.category.storage.CategoryRepository;
+import ru.practicum.handling.exception.ConflictException;
 import ru.practicum.events.repository.EventRepository;
-import ru.practicum.ewm.handler.exception.ConflictException;
-import ru.practicum.exception.NotFoundException;
+import ru.practicum.handling.exception.NotFoundException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -57,15 +57,15 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new NotFoundException("Category with id=" + categoryId + " was not found."));
 
-        // 2. Проверяем наличие связанных событий
+        // Проверяем наличие связанных событий
         if (eventRepository.countByCategoryId(categoryId) > 0) {
             throw new ConflictException("Category is not empty");
         }
 
-        // 3. Удаляем категорию
+        // Удаляем категорию
         categoryRepository.deleteById(categoryId);
     }
-    // --- GET /categories ---
+
     @Override
     @Transactional(readOnly = true)
     public List<CategoryDto> getCategories(Integer from, Integer size) {
@@ -80,7 +80,6 @@ public class CategoryServiceImpl implements CategoryService {
                 .collect(Collectors.toList());
     }
 
-    // --- GET /categories/{catId} ---
     @Override
     @Transactional(readOnly = true)
     public CategoryDto getCategory(Long catId) {

@@ -3,13 +3,13 @@ package ru.practicum.request;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.handling.exception.NotFoundException;
 import ru.practicum.events.enums.EventState;
 import ru.practicum.events.model.Event;
 import ru.practicum.events.repository.EventRepository;
-import ru.practicum.ewm.handler.exception.NotFoundException;
-import ru.practicum.ewm.user.UserRepository;
-import ru.practicum.ewm.user.model.User;
-import ru.practicum.exception.ConflictException;
+import ru.practicum.user.UserRepository;
+import ru.practicum.user.model.User;
+import ru.practicum.handling.exception.ConflictException;
 import ru.practicum.request.dto.ParticipationRequestDto;
 
 import java.time.LocalDateTime;
@@ -33,12 +33,6 @@ public class RequestServiceImpl implements RequestService {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
 
-        // TODO: Добавить валидацию по требованиям:
-        // 1. Нельзя добавить повторный запрос
-        // 2. Инициатор события не может добавить запрос на участие
-        // 3. Нельзя участвовать в неопубликованном событии
-        // 4. Если у события лимит участников, то нельзя добавить запрос, если уже достигнут лимит
-
         if (requestRepository.existsByRequesterIdAndEventId(userId, eventId)) {
             throw new ConflictException("Request already exists");
         }
@@ -60,7 +54,6 @@ public class RequestServiceImpl implements RequestService {
                 throw new ConflictException("Participant limit reached");
             }
         }
-
         Request request = new Request();
         request.setCreated(LocalDateTime.now());
         request.setEvent(event);
@@ -92,8 +85,6 @@ public class RequestServiceImpl implements RequestService {
     public ParticipationRequestDto cancelRequest(Long userId, Long requestId) {
         Request request = requestRepository.findByRequesterIdAndId(userId, requestId)
                 .orElseThrow(() -> new NotFoundException("Request with id=" + requestId + " for user id=" + userId + " was not found"));
-
-        // TODO: Проверить, что запрос не был уже отменен
 
         request.setStatus(RequestStatus.CANCELED);
 

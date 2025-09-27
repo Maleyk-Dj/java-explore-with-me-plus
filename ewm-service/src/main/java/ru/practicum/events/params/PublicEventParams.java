@@ -15,14 +15,13 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PublicEventParams {
-    private String text;                 // текст для поиска (annotation || description)
-    private List<Long> categories;       // фильтр по категориям
-    private Boolean paid;                // платное/бесплатное
-    private String rangeStart;           // формат yyyy-MM-dd HH:mm:ss
-    private String rangeEnd;             // формат yyyy-MM-dd HH:mm:ss
-    private Boolean onlyAvailable;       // только доступные (не исчерпан лимит)
+    private String text;
+    private List<Long> categories;
+    private Boolean paid;
+    private String rangeStart;
+    private String rangeEnd;
+    private Boolean onlyAvailable;
 
-    /** Sort: "EVENT_DATE" (default) или "VIEWS" */
     private String sort = "EVENT_DATE";
 
     @Min(0)

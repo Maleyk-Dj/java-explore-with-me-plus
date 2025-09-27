@@ -27,8 +27,9 @@ public class Category {
     @FieldDescription(value = "Уникальный идентификатор категории", changeByCopy = false)
     Long id;
 
-    @Column(unique = true)
-    @NotBlank(message = "Наименование категории не может быть пустым.", groups = Marker.OnCreate.class)
+    @Column(name = "name", nullable = false, unique = true, length = 50)
+    @NotBlank(message = "Наименование категории не может быть пустым.", groups = {Marker.OnCreate.class, Marker.OnUpdate.class})
     @FieldDescription("Наименование категории")
+    @NotNull
     String name;
 }

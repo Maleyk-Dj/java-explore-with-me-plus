@@ -11,8 +11,6 @@ import ru.practicum.exception.StatsClientException;
 import ru.practicum.statistics.dto.EndpointHitDto;
 import ru.practicum.statistics.dto.ViewStatsDto;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -22,6 +20,8 @@ import java.util.Optional;
 @Slf4j
 public class StatClient {
     private final RestClient restClient;
+    private static final DateTimeFormatter STAT_SERVER_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
 
     @Autowired
     public StatClient(@Value("${stats-server.url:http://localhost:9090}") String statsUrl) {
@@ -55,34 +55,28 @@ public class StatClient {
     }
 
     public List<ViewStatsDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, boolean unique) {
-        DateTimeFormatter dateTimeFormated = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         validateGetStatsParam(start, end);
 
-        var startEncoded = URLEncoder.encode(start.format(dateTimeFormated), StandardCharsets.UTF_8);
-        var endEncoded = URLEncoder.encode(end.format(dateTimeFormated), StandardCharsets.UTF_8);
+        String startStr = start.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        String endStr = end.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 
-        try {
-            log.info("Запрос статистики: start={}, end={}, uris={}, unique={}",
-                    start, end, uris, unique);
+        log.info("Запрос статистики: start={}, end={}, uris={}, unique={}",
+                startStr, endStr, uris, unique);
 
-            return restClient
-                    .get()
-                    .uri(uriBuilder -> uriBuilder
+        return restClient
+                .get()
+                .uri(uriBuilder -> {
+                    return uriBuilder
                             .path("/stats")
-                            .queryParam("start", startEncoded)
-                            .queryParam("end", endEncoded)
+                            .queryParam("start", startStr)
+                            .queryParam("end", endStr)
                             .queryParamIfPresent("uris", Optional.ofNullable(uris).filter(list -> !list.isEmpty()))
                             .queryParam("unique", unique)
-                            .build())
-                    .retrieve()
-                    .body(new ParameterizedTypeReference<List<ViewStatsDto>>() {
-                    });
-
-        } catch (Exception e) {
-            log.error("Ошибка при получении статистики: start={}, end={}, uris={}, unique={}, error={}",
-                    start, end, uris, unique, e.getMessage());
-            throw new StatsClientException("Ошибка при получении статистики");
-        }
+                            .build(false);
+                })
+                .retrieve()
+                .body(new ParameterizedTypeReference<List<ViewStatsDto>>() {
+                });
     }
 
     private void validateGetStatsParam(LocalDateTime start, LocalDateTime end) {

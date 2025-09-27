@@ -4,7 +4,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import ru.practicum.events.dto.*;
 import ru.practicum.events.params.AdminEventParams;
 import ru.practicum.events.params.PublicEventParams;
+import ru.practicum.request.dto.EventRequestStatusUpdateResult;
 import ru.practicum.request.dto.ParticipationRequestDto;
+import ru.practicum.request.dto.RequestStatusUpdateRequest;
 
 import java.util.List;
 
@@ -20,10 +22,12 @@ public interface EventService {
     EventFullDto getPublicEventById(Long eventId, HttpServletRequest request);
 
     List<EventShortDto> searchPublicEvents(PublicEventParams params, HttpServletRequest request);
-    ParticipationRequestDto rejectRequest(Long userId, Long eventId, Long requestId);
+
+    EventRequestStatusUpdateResult changeRequestsStatus(Long userId, Long eventId, RequestStatusUpdateRequest updateRequest);
 
     List<EventShortDto> findAllByUser(Long userId, int from, int size);
 
     EventFullDto findByUserAndEvent(Long userId, Long eventId);
+
     List<ParticipationRequestDto> getRequestsByEvent(Long userId, Long eventId);
 }

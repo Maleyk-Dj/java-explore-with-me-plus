@@ -10,7 +10,7 @@ import ru.practicum.events.dto.UpdateEventUserRequest;
 import ru.practicum.events.enums.EventState;
 import ru.practicum.events.enums.EventStateAction;
 import ru.practicum.events.model.Event;
-import ru.practicum.ewm.user.model.User;
+import ru.practicum.user.model.User;
 import ru.practicum.mapper.IgnoreUnmappedMapperConfig;
 
 import java.time.LocalDateTime;
