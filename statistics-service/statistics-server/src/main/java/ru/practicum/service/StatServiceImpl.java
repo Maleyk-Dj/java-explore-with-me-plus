@@ -29,11 +29,12 @@ public class StatServiceImpl implements StatService {
         stat.setApp(request.getApp());
         stat.setUri(request.getUri());
         stat.setIp(request.getIp());
-        stat.setCreated(request.getTimestamp());
+        stat.setCreated(LocalDateTime.now());
 
         stat = statRepository.save(stat);
 
         request.setId(stat.getId());
+        request.setTimestamp(stat.getCreated());
 
         return request;
     }

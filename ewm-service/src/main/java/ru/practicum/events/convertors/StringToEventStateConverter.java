@@ -5,7 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import ru.practicum.events.enums.EventState;
-import ru.practicum.ewm.handler.exception.ForbiddenOperationException;
+import ru.practicum.handling.exception.ForbiddenOperationException;
 
 import static ru.practicum.util.Constants.VALUE_CANCEL_REVIEW;
 import static ru.practicum.util.Constants.VALUE_SEND_TO_REVIEW;

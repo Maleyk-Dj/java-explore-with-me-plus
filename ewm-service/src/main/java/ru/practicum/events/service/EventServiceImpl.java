@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.category.model.Category;
 import ru.practicum.category.storage.CategoryRepository;
 import ru.practicum.client.StatClient;
+import ru.practicum.handling.exception.ConflictException;
 import ru.practicum.events.dto.*;
 import ru.practicum.events.enums.EventState;
 import ru.practicum.events.enums.EventStateAction;
@@ -26,13 +27,14 @@ import ru.practicum.events.model.Event;
 import ru.practicum.events.params.AdminEventParams;
 import ru.practicum.events.params.PublicEventParams;
 import ru.practicum.events.repository.EventRepository;
-import ru.practicum.ewm.user.UserRepository;
-import ru.practicum.ewm.user.model.User;
-import ru.practicum.ewm.handler.exception.ConflictException;
-import ru.practicum.exception.NotFoundException;
-import ru.practicum.exception.ValidationException;
+import ru.practicum.user.UserRepository;
+import ru.practicum.user.model.User;
+import ru.practicum.handling.exception.NotFoundException;
+import ru.practicum.handling.exception.ValidationException;
 import ru.practicum.request.*;
+import ru.practicum.request.dto.EventRequestStatusUpdateResult;
 import ru.practicum.request.dto.ParticipationRequestDto;
+import ru.practicum.request.dto.RequestStatusUpdateRequest;
 import ru.practicum.statistics.dto.EndpointHitDto;
 import ru.practicum.statistics.dto.ViewStatsDto;
 import ru.practicum.util.Reflection;
@@ -47,7 +49,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-//@Transactional(readOnly = true)
 public class EventServiceImpl implements EventService {
     private final EventRepository eventRepository;
     private final CategoryRepository categoryRepository;
@@ -197,13 +198,16 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    @Transactional
     public EventFullDto getPublicEventById(Long eventId, HttpServletRequest request) {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " not found"));
 
         if (!"PUBLISHED".equalsIgnoreCase(event.getState().name())) {
             throw new NotFoundException("Event with id=" + eventId + " is not published");
-        } //записываем хит
+        }
+
+        //записываем хит
         try {
             EndpointHitDto hit = EndpointHitDto.builder()
                     .app("ewm-main-service")
@@ -381,97 +385,153 @@ public class EventServiceImpl implements EventService {
     }
 
 
-        private Specification<Event> buildAdminSpecification(AdminEventParams params) {
-            return (root, query, cb) -> {
-                List<Predicate> predicates = new ArrayList<>();
+    private Specification<Event> buildAdminSpecification(AdminEventParams params) {
+        return (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
 
-                // Фильтр по пользователям
-                if (params.getUsers() != null && !params.getUsers().isEmpty()) {
-                    predicates.add(root.get("initiator").get("id").in(params.getUsers()));
+            // Фильтр по пользователям
+            if (params.getUsers() != null && !params.getUsers().isEmpty()) {
+                predicates.add(root.get("initiator").get("id").in(params.getUsers()));
+            }
+
+            // Фильтр по состояниям
+            if (params.getStates() != null && !params.getStates().isEmpty()) {
+                List<EventState> eventStates = params.getStates().stream()
+                        .map(state -> {
+                            try {
+                                return EventState.valueOf(state.toUpperCase());
+                            } catch (IllegalArgumentException e) {
+                                throw new ValidationException("Invalid state: " + state);
+                            }
+                        })
+                        .collect(Collectors.toList());
+                predicates.add(root.get("state").in(eventStates));
+            }
+
+            // Фильтр по категориям
+            if (params.getCategories() != null && !params.getCategories().isEmpty()) {
+                predicates.add(root.get("category").get("id").in(params.getCategories()));
+            }
+
+            // Фильтр по дате начала
+            if (params.getRangeStart() != null) {
+                LocalDateTime start = parseDateTime(params.getRangeStart());
+                predicates.add(cb.greaterThanOrEqualTo(root.get("eventDate"), start));
+            }
+
+            // Фильтр по дате окончания
+            if (params.getRangeEnd() != null) {
+                LocalDateTime end = parseDateTime(params.getRangeEnd());
+                predicates.add(cb.lessThanOrEqualTo(root.get("eventDate"), end));
+            }
+
+            // Валидация диапазона дат
+            if (params.getRangeStart() != null && params.getRangeEnd() != null) {
+                LocalDateTime start = parseDateTime(params.getRangeStart());
+                LocalDateTime end = parseDateTime(params.getRangeEnd());
+                if (end.isBefore(start)) {
+                    throw new ValidationException("RangeEnd cannot be before rangeStart");
                 }
+            }
 
-                // Фильтр по состояниям
-                if (params.getStates() != null && !params.getStates().isEmpty()) {
-                    List<EventState> eventStates = params.getStates().stream()
-                            .map(state -> {
-                                try {
-                                    return EventState.valueOf(state.toUpperCase());
-                                } catch (IllegalArgumentException e) {
-                                    throw new ValidationException("Invalid state: " + state);
-                                }
-                            })
-                            .collect(Collectors.toList());
-                    predicates.add(root.get("state").in(eventStates));
-                }
-
-                // Фильтр по категориям
-                if (params.getCategories() != null && !params.getCategories().isEmpty()) {
-                    predicates.add(root.get("category").get("id").in(params.getCategories()));
-                }
-
-                // Фильтр по дате начала
-                if (params.getRangeStart() != null) {
-                    LocalDateTime start = parseDateTime(params.getRangeStart());
-                    predicates.add(cb.greaterThanOrEqualTo(root.get("eventDate"), start));
-                }
-
-                // Фильтр по дате окончания
-                if (params.getRangeEnd() != null) {
-                    LocalDateTime end = parseDateTime(params.getRangeEnd());
-                    predicates.add(cb.lessThanOrEqualTo(root.get("eventDate"), end));
-                }
-
-                // Валидация диапазона дат
-                if (params.getRangeStart() != null && params.getRangeEnd() != null) {
-                    LocalDateTime start = parseDateTime(params.getRangeStart());
-                    LocalDateTime end = parseDateTime(params.getRangeEnd());
-                    if (end.isBefore(start)) {
-                        throw new ValidationException("RangeEnd cannot be before rangeStart");
-                    }
-                }
-
-                return cb.and(predicates.toArray(new Predicate[0]));
-            };
-        }
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+    }
 
     @Override
     @Transactional
-    public ParticipationRequestDto rejectRequest(Long userId, Long eventId, Long requestId) {
-        // 1. Проверяем, что событие существует и принадлежит пользователю
+    public EventRequestStatusUpdateResult changeRequestsStatus(Long userId, Long eventId, RequestStatusUpdateRequest updateRequest) {
+        // 1. Проверки сущностей
         Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found."));
+                .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " not found"));
 
         if (!event.getInitiator().getId().equals(userId)) {
-            throw new ConflictException("User with id=" + userId +
-                    " is not the initiator of event with id=" + eventId);
+            throw new ConflictException("User with id=" + userId + " is not initiator of event with id=" + eventId);
         }
 
-        // 2. Находим запрос на участие
-        Request request = requestRepository.findById(requestId)
-                .orElseThrow(() -> new NotFoundException("Request with id=" + requestId + " was not found."));
-
-        // 3. Проверяем, что запрос принадлежит событию
-        if (!request.getEvent().getId().equals(eventId)) {
-            throw new ConflictException("Request with id=" + requestId + " is not for event id=" + eventId);
+        // 2. Если заявок нет в запросе — bad request
+        if (updateRequest.getRequestIds() == null || updateRequest.getRequestIds().isEmpty()) {
+            throw new ValidationException("requestIds must be not empty");
         }
 
-        // 4. ИСПРАВЛЕННАЯ ПРОВЕРКА: нельзя отклонить уже подтвержденный запрос
-        if (request.getStatus() == RequestStatus.CONFIRMED) {
-            throw new ConflictException("Cannot reject already confirmed request");
+        RequestStatus targetStatus = updateRequest.getStatus();
+        if (targetStatus == null || targetStatus == RequestStatus.PENDING) {
+            throw new ValidationException("Invalid target status");
         }
 
-        // 5. Проверяем, что запрос еще не отклонен
-        if (request.getStatus() == RequestStatus.REJECTED) {
-            throw new ConflictException("Request is already rejected");
+        // 3. Получаем все указанные запросы и проверяем, что они принадлежат событию
+        List<Request> requests = requestRepository.findAllByIdIn(updateRequest.getRequestIds());
+        if (requests.size() != updateRequest.getRequestIds().size()) {
+            throw new NotFoundException("One or more requests not found");
         }
 
-        // 6. Отклоняем запрос
-        request.setStatus(RequestStatus.REJECTED);
-        Request rejectedRequest = requestRepository.save(request);
+        for (Request r : requests) {
+            if (!r.getEvent().getId().equals(eventId)) {
+                throw new ConflictException("Request id=" + r.getId() + " does not belong to event id=" + eventId);
+            }
+        }
 
-        return requestMapper.toParticipationRequestDto(rejectedRequest);
+        // 4. Проверяем бизнес-условия: изменять можно только PENDING-заявки
+        List<Request> nonPending = requests.stream()
+                .filter(r -> r.getStatus() != RequestStatus.PENDING)
+                .collect(Collectors.toList());
+        if (!nonPending.isEmpty()) {
+            throw new ConflictException("Only requests with status PENDING can be changed");
+        }
+
+        List<ParticipationRequestDto> confirmedDtos = new ArrayList<>();
+        List<ParticipationRequestDto> rejectedDtos = new ArrayList<>();
+
+        // 5. Если хотим подтвердить заявки
+        if (targetStatus == RequestStatus.CONFIRMED) {
+            // если лимит = 0 или нет премодерации => подтверждение не требуется
+            if (event.getParticipantLimit() == 0 || Boolean.FALSE.equals(event.getRequestModeration())) {
+                return EventRequestStatusUpdateResult.builder()
+                        .confirmedRequests(Collections.emptyList())
+                        .rejectedRequests(Collections.emptyList())
+                        .build();
+            }
+
+            long confirmedCountNow = requestRepository.countByEventIdAndStatus(eventId, RequestStatus.CONFIRMED);
+            int limit = event.getParticipantLimit() == null ? 0 : event.getParticipantLimit();
+
+            // --- Проверка: если лимит уже достигнут, кидаем 409 ---
+            if (limit > 0 && confirmedCountNow >= limit) {
+                throw new ConflictException("The participant limit has been reached");
+            }
+
+            // сортируем заявки по created ASC
+            List<Request> sorted = requests.stream()
+                    .sorted(Comparator.comparing(Request::getCreated))
+                    .collect(Collectors.toList());
+
+            for (Request req : sorted) {
+                if (confirmedCountNow < limit) {
+                    req.setStatus(RequestStatus.CONFIRMED);
+                    confirmedCountNow++;
+                    requestRepository.save(req);
+                    confirmedDtos.add(requestMapper.toParticipationRequestDto(req));
+                } else {
+                    req.setStatus(RequestStatus.REJECTED);
+                    requestRepository.save(req);
+                    rejectedDtos.add(requestMapper.toParticipationRequestDto(req));
+                }
+            }
+        } else if (targetStatus == RequestStatus.REJECTED) {
+            // отклоняем все указанные заявки
+            for (Request req : requests) {
+                req.setStatus(RequestStatus.REJECTED);
+                requestRepository.save(req);
+                rejectedDtos.add(requestMapper.toParticipationRequestDto(req));
+            }
+        }
+
+        // Гарантируем транзакционность — всё сохранено
+        return EventRequestStatusUpdateResult.builder()
+                .confirmedRequests(confirmedDtos)
+                .rejectedRequests(rejectedDtos)
+                .build();
     }
-
 
     private void updateEventFields(Event event, UpdateEventAdminRequest dto) {
         if (dto.getAnnotation() != null) {

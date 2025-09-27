@@ -6,7 +6,7 @@ import ru.practicum.events.dto.EventFullDto;
 import ru.practicum.events.dto.EventShortDto;
 import ru.practicum.events.dto.Location;
 import ru.practicum.events.model.Event;
-import ru.practicum.ewm.user.dto.UserShortDto;
+import ru.practicum.user.dto.UserShortDto;
 
 import java.time.format.DateTimeFormatter;
 

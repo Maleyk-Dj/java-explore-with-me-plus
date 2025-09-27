@@ -11,9 +11,9 @@ import ru.practicum.compilations.mapper.CompilationMapper;
 import ru.practicum.compilations.model.Compilation;
 import ru.practicum.compilations.params.PublicCompilationsParams;
 import ru.practicum.compilations.repository.CompilationRepository;
+import ru.practicum.handling.exception.NotFoundException;
 import ru.practicum.events.model.Event;
 import ru.practicum.events.repository.EventRepository;
-import ru.practicum.ewm.handler.exception.NotFoundException;
 
 import java.util.HashSet;
 import java.util.List;

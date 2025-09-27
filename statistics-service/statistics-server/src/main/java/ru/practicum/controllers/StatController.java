@@ -1,6 +1,5 @@
 package ru.practicum.controllers;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -15,10 +14,10 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
-
 @Validated
 @Slf4j
 @RestController
+@RequestMapping
 public class StatController {
     private final StatService statService;
     private static final String DATE_TAME_FORMAT_PATTERN = "yyyy-MM-dd HH:mm:ss";
@@ -35,13 +34,12 @@ public class StatController {
     }
 
     @GetMapping("/stats")
-    public Collection<ViewStatsDto> getStats(@RequestParam(name = "start")
-                                             @DateTimeFormat(pattern = DATE_TAME_FORMAT_PATTERN) LocalDateTime start,
-                                             @RequestParam(name = "end")
-                                             @DateTimeFormat(pattern = DATE_TAME_FORMAT_PATTERN) LocalDateTime end,
-                                             @RequestParam(name = "uris", required = false) List<String> uris,
-                                             @RequestParam(name = "unique", required = false,
-                                                     defaultValue = "false") Boolean unique) {
+    public Collection<ViewStatsDto> getStats(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end,
+            @RequestParam(required = false) List<String> uris,
+            @RequestParam(defaultValue = "false") boolean unique) {
         return statService.getStats(start, end, uris, unique);
     }
 }
+

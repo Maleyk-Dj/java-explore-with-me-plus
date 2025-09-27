@@ -8,11 +8,6 @@ import ru.practicum.category.model.Category;
 @Component
 public class CategoryMapper {
 
-    /**
-     * Преобразует NewCategoryDto в сущность Category.
-     * @param newCategoryDto DTO с данными для новой категории.
-     * @return Сущность Category.
-     */
     public Category toCategory(NewCategoryDto newCategoryDto) {
         if (newCategoryDto == null) {
             return null;
@@ -24,11 +19,6 @@ public class CategoryMapper {
         return category;
     }
 
-    /**
-     * Преобразует сущность Category в CategoryDto.
-     * @param category Сущность Category.
-     * @return DTO с полной информацией о категории.
-     */
     public CategoryDto toCategoryDto(Category category) {
         if (category == null) {
             return null;
