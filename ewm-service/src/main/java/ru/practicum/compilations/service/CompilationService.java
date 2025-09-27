@@ -11,11 +11,14 @@ public interface CompilationService {
 
     //public
     List<CompilationDto> findCompilations(PublicCompilationsParams params);
+
     CompilationDto findCompilationById(Long compId);
 
     //admin
     CompilationDto addCompilation(NewCompilationDto dto);
+
     CompilationDto updateCompilation(Long compId, UpdateCompilationRequest dto);
+
     void removeCompilation(Long compId);
 
 }
