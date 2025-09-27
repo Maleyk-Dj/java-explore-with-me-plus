@@ -18,8 +18,8 @@ import static ru.practicum.util.Constants.LENGTH_NAME_CATEGORY_MIN;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class NewCategoryDto {
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    @Size(min = LENGTH_NAME_CATEGORY_MIN, max = LENGTH_NAME_CATEGORY_MAX, groups = Marker.OnCreate.class)
-    @NotBlank(message = "При создании категории должно быть указано ее наименование.", groups = Marker.OnCreate.class)
+    @Size(min = LENGTH_NAME_CATEGORY_MIN, max = LENGTH_NAME_CATEGORY_MAX, groups = {Marker.OnCreate.class, Marker.OnUpdate.class})
+    @NotBlank(message = "При создании категории должно быть указано ее наименование.", groups = {Marker.OnCreate.class, Marker.OnUpdate.class})
     @FieldDescription("Наименование категории")
     String name;
 }

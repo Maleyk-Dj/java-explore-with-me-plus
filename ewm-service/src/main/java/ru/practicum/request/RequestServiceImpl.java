@@ -3,11 +3,13 @@ package ru.practicum.request;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.events.enums.EventState;
 import ru.practicum.events.model.Event;
 import ru.practicum.events.repository.EventRepository;
 import ru.practicum.ewm.handler.exception.NotFoundException;
 import ru.practicum.ewm.user.UserRepository;
 import ru.practicum.ewm.user.model.User;
+import ru.practicum.exception.ConflictException;
 import ru.practicum.request.dto.ParticipationRequestDto;
 
 import java.time.LocalDateTime;
@@ -37,12 +39,37 @@ public class RequestServiceImpl implements RequestService {
         // 3. Нельзя участвовать в неопубликованном событии
         // 4. Если у события лимит участников, то нельзя добавить запрос, если уже достигнут лимит
 
+        if (requestRepository.existsByRequesterIdAndEventId(userId, eventId)) {
+            throw new ConflictException("Request already exists");
+        }
+
+        // 2. Проверка, что инициатор события не может подать запрос на участие
+        if (event.getInitiator().getId().equals(userId)) {
+            throw new ConflictException("Event initiator cannot request participation");
+        }
+
+        // 3. Проверка, что событие опубликовано
+        if (!event.getState().equals(EventState.PUBLISHED)) {
+            throw new ConflictException("Cannot participate in unpublished event");
+        }
+
+        // 4. Проверка лимита участников
+        if (event.getParticipantLimit() != 0) {
+            long confirmedRequestsCount = requestRepository.countByEventIdAndStatus(eventId, RequestStatus.CONFIRMED);
+            if (confirmedRequestsCount >= event.getParticipantLimit()) {
+                throw new ConflictException("Participant limit reached");
+            }
+        }
+
         Request request = new Request();
         request.setCreated(LocalDateTime.now());
         request.setEvent(event);
         request.setRequester(user);
-        // TODO: Статус заявки должен быть PENDING или CONFIRMED в зависимости от того, нужна ли модерация
-        request.setStatus(RequestStatus.PENDING);
+        if (!event.getRequestModeration() || event.getParticipantLimit() == 0) {
+            request.setStatus(RequestStatus.CONFIRMED);
+        } else {
+            request.setStatus(RequestStatus.PENDING);
+        }
 
         return requestMapper.toParticipationRequestDto(requestRepository.save(request));
     }
@@ -72,6 +99,5 @@ public class RequestServiceImpl implements RequestService {
 
         return requestMapper.toParticipationRequestDto(requestRepository.save(request));
     }
-
 
 }
