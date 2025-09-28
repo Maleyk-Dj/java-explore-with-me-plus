@@ -14,9 +14,9 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AdminEventParams {
-    private List<Long> users;
+    private List<Integer> users;
     private List<String> states;
-    private List<Long> categories;
+    private List<Integer> categories;
     private String rangeStart;
     private String rangeEnd;
 

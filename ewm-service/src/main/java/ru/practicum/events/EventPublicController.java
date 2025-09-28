@@ -2,6 +2,7 @@ package ru.practicum.events;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +17,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/events")
 @RequiredArgsConstructor
@@ -24,7 +26,7 @@ public class EventPublicController {
     private final EventService eventService;
 
     @GetMapping("/{eventId}")
-    public EventFullDto getEvent(@PathVariable Long eventId, HttpServletRequest request) {
+    public EventFullDto getEvent(@PathVariable Integer eventId, HttpServletRequest request) {
         return eventService.getPublicEventById(eventId, request);
     }
 

@@ -39,7 +39,7 @@ public class PublicCompilationController {
     }
 
     @GetMapping("/{compId}")
-    public CompilationDto getCompilation(@PathVariable @Positive Long compId) {
+    public CompilationDto getCompilation(@PathVariable @Positive Integer compId) {
         log.info("Запрос на получение подборки ID={}", compId);
         return compilationService.findCompilationById(compId);
     }

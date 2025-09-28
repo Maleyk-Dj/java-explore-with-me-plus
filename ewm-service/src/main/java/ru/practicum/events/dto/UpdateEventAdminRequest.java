@@ -22,7 +22,7 @@ public class UpdateEventAdminRequest {
     private String annotation;
 
     @JsonProperty("category")
-    private Long category;
+    private Integer category;
 
     @Size(min = 20, max = 7000, message = "Описание должно содержать от 20 до 7000 символов")
     @JsonProperty("description")

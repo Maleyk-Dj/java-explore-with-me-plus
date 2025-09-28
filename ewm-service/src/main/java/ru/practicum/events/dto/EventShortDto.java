@@ -16,7 +16,7 @@ import ru.practicum.user.dto.UserShortDto;
 @AllArgsConstructor
 @Builder
 public class EventShortDto {
-    private Long id;
+    private Integer id;
 
     @NotBlank(message = "Аннотация не может быть пустой")
     @Size(min = 20, max = 2000, message = "Аннотация должна содержать от 20 до 2000 символов")
@@ -41,5 +41,5 @@ public class EventShortDto {
     @Size(min = 3, max = 120, message = "Заголовок должен содержать от 3 до 120 символов")
     private String title;
 
-    private Long views;
+    private Integer views;
 }

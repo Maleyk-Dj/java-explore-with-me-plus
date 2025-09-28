@@ -13,16 +13,16 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecificationExecutor<Event> {
+public interface EventRepository extends JpaRepository<Event, Integer>, JpaSpecificationExecutor<Event> {
 
     @Query("SELECT e FROM Event e WHERE e.id IN :eventIds")
-    Set<Event> findAllById(@Param("eventIds") List<Long> eventIds);
+    Set<Event> findAllById(@Param("eventIds") List<Integer> eventIds);
 
     List<Event> findByInitiatorOrderByIdAsc(User user);
 
-    Optional<Event> findByInitiatorAndId(User user, Long eventId);
+    Optional<Event> findByInitiatorAndId(User user, Integer eventId);
 
     Collection<Event> findByCategory(Category category);
 
-    Long countByCategoryId(Long categoryId);
+    Integer countByCategoryId(Integer categoryId);
 }

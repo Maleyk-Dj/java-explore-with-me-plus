@@ -20,23 +20,23 @@ public class RequestController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ParticipationRequestDto createRequest(@PathVariable @Positive Long userId,
-                                                 @RequestParam @Positive Long eventId) {
+    public ParticipationRequestDto createRequest(@PathVariable @Positive Integer userId,
+                                                 @RequestParam @Positive Integer eventId) {
         return requestService.createRequest(userId, eventId);
     }
 
     // GET /users/{userId}/requests
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<ParticipationRequestDto> getUserRequests(@PathVariable @Positive Long userId) {
+    public List<ParticipationRequestDto> getUserRequests(@PathVariable @Positive Integer userId) {
         return requestService.getUserRequests(userId);
     }
 
     // PATCH /users/{userId}/requests/{requestId}/cancel
     @PatchMapping("/{requestId}/cancel")
     @ResponseStatus(HttpStatus.OK)
-    public ParticipationRequestDto cancelRequest(@PathVariable @Positive Long userId,
-                                                 @PathVariable @Positive Long requestId) {
+    public ParticipationRequestDto cancelRequest(@PathVariable @Positive Integer userId,
+                                                 @PathVariable @Positive Integer requestId) {
         return requestService.cancelRequest(userId, requestId);
     }
 }

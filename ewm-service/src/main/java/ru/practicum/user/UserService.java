@@ -10,5 +10,5 @@ public interface UserService {
 
     List<UserDto> getUsers(AdminUserParam param);
 
-    void delete(Long userId);
+    void delete(Integer userId);
 }

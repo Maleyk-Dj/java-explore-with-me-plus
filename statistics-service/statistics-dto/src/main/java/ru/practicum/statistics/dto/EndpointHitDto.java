@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @Builder
 public class EndpointHitDto {
 
-    private Long id;
+    private Integer id;
     @NotBlank(message = "The service identifier cannot be empty")
     private String app;
     @NotBlank(message = "URI cannot be empty")

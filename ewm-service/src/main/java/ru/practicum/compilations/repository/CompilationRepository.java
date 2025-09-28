@@ -8,7 +8,7 @@ import ru.practicum.compilations.model.Compilation;
 
 import java.util.List;
 
-public interface CompilationRepository extends JpaRepository<Compilation, Long> {
+public interface CompilationRepository extends JpaRepository<Compilation, Integer> {
 
     @Query("SELECT c FROM Compilation c WHERE c.pinned = :pinned")
     List<Compilation> findByPinned(@Param("pinned") Boolean pinned, Pageable pageable);

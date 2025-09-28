@@ -16,7 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 public class PublicEventParams {
     private String text;
-    private List<Long> categories;
+    private List<Integer> categories;
     private Boolean paid;
     private String rangeStart;
     private String rangeEnd;

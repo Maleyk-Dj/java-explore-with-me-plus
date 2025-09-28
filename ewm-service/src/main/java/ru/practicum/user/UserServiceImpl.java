@@ -14,7 +14,6 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
@@ -31,6 +30,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<UserDto> getUsers(AdminUserParam param) {
         // если ids переданы — возвращаем конкретных пользователей без пагинации
         if (param.getIds() != null && !param.getIds().isEmpty()) {
@@ -50,7 +50,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void delete(Long userId) {
+    public void delete(Integer userId) {
         if (!userRepository.existsById(userId)) {
             throw new NotFoundException("User with id=%d was not found".formatted(userId));
         }

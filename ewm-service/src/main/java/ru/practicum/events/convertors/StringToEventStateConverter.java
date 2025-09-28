@@ -1,8 +1,7 @@
 package ru.practicum.events.convertors;
 
 import com.fasterxml.jackson.databind.util.StdConverter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.practicum.events.enums.EventState;
 import ru.practicum.handling.exception.ForbiddenOperationException;
@@ -11,8 +10,8 @@ import static ru.practicum.util.Constants.VALUE_CANCEL_REVIEW;
 import static ru.practicum.util.Constants.VALUE_SEND_TO_REVIEW;
 
 @Component
+@Slf4j
 public class StringToEventStateConverter extends StdConverter<String, EventState> {
-    private static final Logger log = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(StringToEventStateConverter.class);
 
     @Override
     public EventState convert(String value) {

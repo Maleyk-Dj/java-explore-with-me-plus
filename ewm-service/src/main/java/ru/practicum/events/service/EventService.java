@@ -13,21 +13,21 @@ import java.util.List;
 public interface EventService {
     List<EventFullDto> search(AdminEventParams params);
 
-    EventFullDto updateEventByAdmin(Long eventId, UpdateEventAdminRequest dto);
+    EventFullDto updateEventByAdmin(Integer eventId, UpdateEventAdminRequest dto);
 
-    public EventFullDto add(Long userId, NewEventDto newEventDto);
+    public EventFullDto add(Integer userId, NewEventDto newEventDto);
 
-    public EventFullDto update(Long userId, Long eventId, UpdateEventUserRequest updateEventUserRequest);
+    public EventFullDto update(Integer userId, Integer eventId, UpdateEventUserRequest updateEventUserRequest);
 
-    EventFullDto getPublicEventById(Long eventId, HttpServletRequest request);
+    EventFullDto getPublicEventById(Integer eventId, HttpServletRequest request);
 
     List<EventShortDto> searchPublicEvents(PublicEventParams params, HttpServletRequest request);
 
-    EventRequestStatusUpdateResult changeRequestsStatus(Long userId, Long eventId, RequestStatusUpdateRequest updateRequest);
+    EventRequestStatusUpdateResult changeRequestsStatus(Integer userId, Integer eventId, RequestStatusUpdateRequest updateRequest);
 
-    List<EventShortDto> findAllByUser(Long userId, int from, int size);
+    List<EventShortDto> findAllByUser(Integer userId, int from, int size);
 
-    EventFullDto findByUserAndEvent(Long userId, Long eventId);
+    EventFullDto findByUserAndEvent(Integer userId, Integer eventId);
 
-    List<ParticipationRequestDto> getRequestsByEvent(Long userId, Long eventId);
+    List<ParticipationRequestDto> getRequestsByEvent(Integer userId, Integer eventId);
 }

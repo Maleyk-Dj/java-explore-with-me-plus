@@ -15,7 +15,7 @@ import ru.practicum.user.dto.UserShortDto;
 @AllArgsConstructor
 @Builder
 public class EventFullDto {
-    private Long id;
+    private Integer id;
 
     @NotNull
     private String annotation;
@@ -46,5 +46,5 @@ public class EventFullDto {
     private String state;
     @NotBlank
     private String title;
-    private Long views;
+    private Integer views;
 }

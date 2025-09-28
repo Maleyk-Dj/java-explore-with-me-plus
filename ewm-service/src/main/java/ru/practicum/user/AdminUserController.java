@@ -40,7 +40,7 @@ public class AdminUserController {
     // DELETE /admin/users/{userId}
     @DeleteMapping("/{userId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable @Positive Long userId) {
+    public void delete(@PathVariable @Positive Integer userId) {
         log.info("ADMIN:delete user id={}", userId);
         userService.delete(userId);
     }

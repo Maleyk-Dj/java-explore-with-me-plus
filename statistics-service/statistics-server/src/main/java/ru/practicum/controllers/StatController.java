@@ -1,7 +1,7 @@
 package ru.practicum.controllers;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
@@ -18,14 +18,11 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping
+@RequiredArgsConstructor
 public class StatController {
     private final StatService statService;
     private static final String DATE_TIME_FORMAT_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
-    @Autowired
-    public StatController(StatService statService) {
-        this.statService = statService;
-    }
 
     @PostMapping("/hit")
     @ResponseStatus(HttpStatus.CREATED)

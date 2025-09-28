@@ -28,6 +28,7 @@ public class CategoryServiceImpl implements CategoryService {
     private final EventRepository eventRepository;
 
     @Override
+    @Transactional
     public CategoryDto add(NewCategoryDto newCategoryDto) {
         // Проверка уникальности имени
         if (categoryRepository.existsByName(newCategoryDto.getName())) {
@@ -39,7 +40,8 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public CategoryDto update(Long categoryId, NewCategoryDto newCategoryDto) {
+    @Transactional
+    public CategoryDto update(Integer categoryId, NewCategoryDto newCategoryDto) {
         Category oldCategory = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new NotFoundException("Категория с id = " + categoryId + " не найдена.", log));
 
@@ -53,7 +55,8 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public void delete(Long categoryId) {
+    @Transactional
+    public void delete(Integer categoryId) {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new NotFoundException("Category with id=" + categoryId + " was not found."));
 
@@ -82,7 +85,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional(readOnly = true)
-    public CategoryDto getCategory(Long catId) {
+    public CategoryDto getCategory(Integer catId) {
         Category category = categoryRepository.findById(catId)
                 .orElseThrow(() -> new NotFoundException("Category with id=" + catId + " was not found."));
 

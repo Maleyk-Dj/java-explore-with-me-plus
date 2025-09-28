@@ -26,9 +26,9 @@ public class EventsAdminController {
 
     @GetMapping
     public ResponseEntity<List<EventFullDto>> searchEvents(
-            @RequestParam(required = false) List<Long> users,
+            @RequestParam(required = false) List<Integer> users,
             @RequestParam(required = false) List<String> states,
-            @RequestParam(required = false) List<Long> categories,
+            @RequestParam(required = false) List<Integer> categories,
             @RequestParam(required = false) String rangeStart,
             @RequestParam(required = false) String rangeEnd,
             @RequestParam(defaultValue = "0") @Min(0) Integer from,
@@ -50,7 +50,7 @@ public class EventsAdminController {
 
     @PatchMapping("/{eventId}")
     public ResponseEntity<EventFullDto> updateEvent(
-            @PathVariable @Positive Long eventId,
+            @PathVariable @Positive Integer eventId,
             @Valid @RequestBody UpdateEventAdminRequest updateRequest) {
 
         EventFullDto updatedEvent = eventService.updateEventByAdmin(eventId, updateRequest);

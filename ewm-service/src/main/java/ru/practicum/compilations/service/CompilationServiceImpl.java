@@ -55,7 +55,7 @@ public class CompilationServiceImpl implements CompilationService {
 
     @Override
     @Transactional(readOnly = true)
-    public CompilationDto findCompilationById(Long compId) {
+    public CompilationDto findCompilationById(Integer compId) {
         log.info("Поиск подборки по ID: {}", compId);
 
         Compilation compilation = compilationRepository.findById(compId)
@@ -79,7 +79,7 @@ public class CompilationServiceImpl implements CompilationService {
 
     @Override
     @Transactional
-    public CompilationDto updateCompilation(Long compId, UpdateCompilationRequest dto) {
+    public CompilationDto updateCompilation(Integer compId, UpdateCompilationRequest dto) {
         log.info("Обновление подборки: ID={}, новые данные={}", compId, dto);
 
         Compilation compilation = compilationRepository.findById(compId)
@@ -99,7 +99,7 @@ public class CompilationServiceImpl implements CompilationService {
 
     @Override
     @Transactional
-    public void removeCompilation(Long compId) {
+    public void removeCompilation(Integer compId) {
         log.info("Удаление подборки: ID={}", compId);
 
         if (!compilationRepository.existsById(compId)) {
@@ -110,12 +110,12 @@ public class CompilationServiceImpl implements CompilationService {
         log.info("Подборка с ID {} успешно удалена", compId);
     }
 
-    private Set<Event> getEventsFromIds(List<Long> eventIds) {
+    private Set<Event> getEventsFromIds(List<Integer> eventIds) {
         if (eventIds == null || eventIds.isEmpty()) {
             return Set.of();
         }
         // 1. Очистка списка от null и дубликатов, чтобы избежать NPE в репозитории
-        Set<Long> uniqueEventIds = new HashSet<>(eventIds);
+        Set<Integer> uniqueEventIds = new HashSet<>(eventIds);
         uniqueEventIds.remove(null);
 
         if (uniqueEventIds.isEmpty()) {
@@ -129,7 +129,7 @@ public class CompilationServiceImpl implements CompilationService {
         // Если количество найденных событий не совпадает с запрошенным, выбрасываем 404.
         if (foundEvents.size() != uniqueEventIds.size()) {
 
-            Set<Long> foundIds = foundEvents.stream()
+            Set<Integer> foundIds = foundEvents.stream()
                     .map(Event::getId)
                     .collect(Collectors.toSet());
 

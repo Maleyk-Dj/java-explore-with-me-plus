@@ -30,7 +30,7 @@ public class CategoryPublicController { // Создан новый контро�
 
     @GetMapping("/{catId}") // GET /categories/{catId}
     @ResponseStatus(HttpStatus.OK)
-    public CategoryDto getCategory(@PathVariable @Positive Long catId) {
+    public CategoryDto getCategory(@PathVariable @Positive Integer catId) {
         return categoryService.getCategory(catId);
     }
 }

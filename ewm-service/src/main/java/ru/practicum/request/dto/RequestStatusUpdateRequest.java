@@ -17,7 +17,7 @@ import java.util.List;
 @Builder
 public class RequestStatusUpdateRequest {
     @NotEmpty
-    private List<@Positive Long> requestIds;
+    private List<@Positive Integer> requestIds;
 
     @NotNull
     private RequestStatus status; // enum: CONFIRMED или REJECTED (или PENDING etc)

@@ -1,10 +1,7 @@
 package ru.practicum.events.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import ru.practicum.category.model.Category;
 import ru.practicum.events.enums.EventState;
 import ru.practicum.user.model.User;
@@ -14,7 +11,10 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "events")
-@Data
+@Getter
+@Setter
+@ToString
+@EqualsAndHashCode(of = "id")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -22,7 +22,7 @@ public class Event {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @FieldDescription(value = "Уникальный идентификатор собятия", changeByCopy = false)
-    private Long id;
+    private Integer id;
 
     @Column(nullable = false, length = 2000)
     @FieldDescription(value = "Аннотация")
@@ -84,5 +84,5 @@ public class Event {
     @FieldDescription(value = "Заголовок")
     private String title;
 
-    private Long views = 0L;
+    private Integer views = 0;
 }

@@ -5,11 +5,11 @@ import ru.practicum.request.dto.ParticipationRequestDto;
 import java.util.List;
 
 public interface RequestService {
-    ParticipationRequestDto createRequest(Long userId, Long eventId);
+    ParticipationRequestDto createRequest(Integer userId, Integer eventId);
 
     // Метод для получения всех запросов пользователя
-    List<ParticipationRequestDto> getUserRequests(Long userId);
+    List<ParticipationRequestDto> getUserRequests(Integer userId);
 
     // Метод для отмены запроса
-    ParticipationRequestDto cancelRequest(Long userId, Long requestId);
+    ParticipationRequestDto cancelRequest(Integer userId, Integer requestId);
 }

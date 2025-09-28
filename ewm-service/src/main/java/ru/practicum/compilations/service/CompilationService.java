@@ -12,13 +12,13 @@ public interface CompilationService {
     //public
     List<CompilationDto> findCompilations(PublicCompilationsParams params);
 
-    CompilationDto findCompilationById(Long compId);
+    CompilationDto findCompilationById(Integer compId);
 
     //admin
     CompilationDto addCompilation(NewCompilationDto dto);
 
-    CompilationDto updateCompilation(Long compId, UpdateCompilationRequest dto);
+    CompilationDto updateCompilation(Integer compId, UpdateCompilationRequest dto);
 
-    void removeCompilation(Long compId);
+    void removeCompilation(Integer compId);
 
 }

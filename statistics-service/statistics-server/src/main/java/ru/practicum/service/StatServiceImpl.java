@@ -1,7 +1,6 @@
 package ru.practicum.service;
 
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.mapper.StatisticsMapper;
 import ru.practicum.model.Stat;
@@ -14,14 +13,9 @@ import java.util.Collection;
 import java.util.List;
 
 @Service
-@Slf4j
+@RequiredArgsConstructor
 public class StatServiceImpl implements StatService {
     private final StatRepository statRepository;
-
-    @Autowired
-    public StatServiceImpl(StatRepository statRepository) {
-        this.statRepository = statRepository;
-    }
 
     @Override
     public EndpointHitDto hit(EndpointHitDto request) {

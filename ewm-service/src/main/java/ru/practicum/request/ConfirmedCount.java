@@ -1,7 +1,7 @@
 package ru.practicum.request;
 
 public interface ConfirmedCount {
-    Long getEventId();
+    Integer getEventId();
 
     Integer getCnt();
 }
