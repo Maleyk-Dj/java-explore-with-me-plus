@@ -206,8 +206,19 @@ public class EventServiceImpl implements EventService {
         if (!"PUBLISHED".equalsIgnoreCase(event.getState().name())) {
             throw new NotFoundException("Event with id=" + eventId + " is not published");
         }
-
-        //записываем хит
+        // получить просмотры ДО записи хита
+        LocalDateTime start = event.getPublishedOn() != null ? event.getPublishedOn()
+                : (event.getCreatedOn() != null ? event.getCreatedOn() : EPOCH);
+        LocalDateTime end = LocalDateTime.now();
+        List<String> uris = List.of("/events/" + eventId);
+        long views = 0L;
+        try {
+            List<ViewStatsDto> stats = statClient.getStats(start, end, uris, true);
+            views = stats.stream().mapToLong(ViewStatsDto::getHits).sum();
+        } catch (Exception ex) {
+            log.warn("Failed to fetch views for event {}: {}", eventId, ex.getMessage());
+        }
+        // записываем хит ПОСЛЕ подсчёта
         try {
             EndpointHitDto hit = EndpointHitDto.builder()
                     .app("ewm-main-service")
@@ -220,26 +231,14 @@ public class EventServiceImpl implements EventService {
             log.warn("Stat hit failed for event {}: {}", eventId, ex.getMessage());
         }
 
-        // получить просмотры
-        LocalDateTime start = event.getPublishedOn() != null ? event.getPublishedOn()
-                : (event.getCreatedOn() != null ? event.getCreatedOn() : EPOCH);
-        LocalDateTime end = LocalDateTime.now();
-        List<String> uris = List.of("/events/" + eventId);
-        long views = 0L;
-        try {
-            List<ViewStatsDto> stats = statClient.getStats(start, end, uris, true);
-            views = stats.stream().mapToLong(ViewStatsDto::getHits).sum();
-        } catch (Exception ex) {
-            log.warn("Failed to fetch views for event {}: {}", eventId, ex.getMessage());
-        }
-
         Integer confirmed = requestRepository.countConfirmedByEventId(eventId);
         confirmed = confirmed == null ? 0 : confirmed;
 
         EventFullDto dto = eventMapper.toEventFullDto(event);
 
         dto.setConfirmedRequests(confirmed);
-        dto.setViews(views);
+        // views + 1, потому что только что добавили хит
+        dto.setViews(views + 1);
 
         return dto;
     }
