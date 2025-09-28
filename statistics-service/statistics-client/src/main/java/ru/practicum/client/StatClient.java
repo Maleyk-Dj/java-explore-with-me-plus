@@ -14,14 +14,11 @@ import ru.practicum.statistics.dto.ViewStatsDto;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Optional;
 
 @Component
 @Slf4j
 public class StatClient {
     private final RestClient restClient;
-    private static final DateTimeFormatter STAT_SERVER_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
 
     @Autowired
     public StatClient(@Value("${stats-server.url:http://localhost:9090}") String statsUrl) {
@@ -57,8 +54,9 @@ public class StatClient {
     public List<ViewStatsDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, boolean unique) {
         validateGetStatsParam(start, end);
 
-        String startStr = start.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-        String endStr = end.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String startStr = start.format(formatter);
+        String endStr = end.format(formatter);
 
         log.info("Запрос статистики: start={}, end={}, uris={}, unique={}",
                 startStr, endStr, uris, unique);
@@ -66,17 +64,22 @@ public class StatClient {
         return restClient
                 .get()
                 .uri(uriBuilder -> {
-                    return uriBuilder
+                    var builder = uriBuilder
                             .path("/stats")
                             .queryParam("start", startStr)
                             .queryParam("end", endStr)
-                            .queryParamIfPresent("uris", Optional.ofNullable(uris).filter(list -> !list.isEmpty()))
-                            .queryParam("unique", unique)
-                            .build(false);
+                            .queryParam("unique", unique);
+
+                    if (uris != null && !uris.isEmpty()) {
+                        for (String uri : uris) {
+                            builder = builder.queryParam("uris", uri);
+                        }
+                    }
+
+                    return builder.build(false);
                 })
                 .retrieve()
-                .body(new ParameterizedTypeReference<List<ViewStatsDto>>() {
-                });
+                .body(new ParameterizedTypeReference<List<ViewStatsDto>>() {});
     }
 
     private void validateGetStatsParam(LocalDateTime start, LocalDateTime end) {
