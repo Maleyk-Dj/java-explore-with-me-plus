@@ -227,7 +227,7 @@ public class EventServiceImpl implements EventService {
         List<String> uris = List.of("/events/" + eventId);
         long views = 0L;
         try {
-            List<ViewStatsDto> stats = statClient.getStats(start, end, uris, true);
+            List<ViewStatsDto> stats = statClient.getStats(start, end, uris, false);
             views = stats.stream().mapToLong(ViewStatsDto::getHits).sum();
         } catch (Exception ex) {
             log.warn("Failed to fetch views for event {}: {}", eventId, ex.getMessage());
