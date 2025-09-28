@@ -87,7 +87,6 @@ public class ErrorHandlingControllerAdvice {
                 e.getMessage(),
                 null);
     }
-
     @ExceptionHandler(ValidationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiError onValidationException(ValidationException e) {

@@ -33,20 +33,24 @@ public class StatController {
         return statService.hit(request);
     }
 
+
     @GetMapping("/stats")
-    public Collection<ViewStatsDto> getStats(
-            @RequestParam
-            @DateTimeFormat(pattern = DATE_TIME_FORMAT_PATTERN)
-            LocalDateTime start,
-            @RequestParam
-            @DateTimeFormat(pattern = DATE_TIME_FORMAT_PATTERN)
-            LocalDateTime end,
+    public Collection <ViewStatsDto> getStats(
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime start,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime end,
             @RequestParam(required = false) List<String> uris,
             @RequestParam(defaultValue = "false") boolean unique) {
 
-        log.debug("Received stats request: start={}, end={}, uris={}, unique={}", start, end, uris, unique);
+        if (start.isAfter(end)) {
+            // Spring автоматически маппирует IllegalArgumentException в 400 Bad Request
+            throw new IllegalArgumentException("Дата начала (" + start +
+                    ") не может быть позже даты окончания (" + end + ").");
+        }
+        // Передача параметров в сервис, как обычно
         return statService.getStats(start, end, uris, unique);
     }
+
+
 }
 
 
