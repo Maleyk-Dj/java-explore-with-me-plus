@@ -170,7 +170,7 @@ public class EventServiceImpl implements EventService {
             LocalDateTime end = LocalDateTime.now();
             List<String> uris = List.of("/events/" + eventId);
 
-            List<ViewStatsDto> stats = statClient.getStats(start, end, uris, true);
+            List<ViewStatsDto> stats = statClient.getStats(start, end, uris, false);
             return stats.stream().mapToLong(ViewStatsDto::getHits).sum();
         } catch (Exception ex) {
             log.warn("Failed to fetch views for event {}: {}", eventId, ex.getMessage());
@@ -227,7 +227,7 @@ public class EventServiceImpl implements EventService {
         List<String> uris = List.of("/events/" + eventId);
         long views = 0L;
         try {
-            List<ViewStatsDto> stats = statClient.getStats(start, end, uris, false);
+            List<ViewStatsDto> stats = statClient.getStats(start, end, uris, true);
             views = stats.stream().mapToLong(ViewStatsDto::getHits).sum();
         } catch (Exception ex) {
             log.warn("Failed to fetch views for event {}: {}", eventId, ex.getMessage());
