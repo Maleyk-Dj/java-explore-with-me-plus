@@ -1,6 +1,6 @@
 package ru.practicum.service;
 
-import lombok.extern.slf4j.Slf4j;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.mapper.StatisticsMapper;
 import ru.practicum.model.Stat;
@@ -13,13 +13,9 @@ import java.util.Collection;
 import java.util.List;
 
 @Service
-@Slf4j
+@RequiredArgsConstructor
 public class StatServiceImpl implements StatService {
     private final StatRepository statRepository;
-
-    public StatServiceImpl(StatRepository statRepository) {
-        this.statRepository = statRepository;
-    }
 
     @Override
     public EndpointHitDto hit(EndpointHitDto request) {
@@ -27,11 +23,12 @@ public class StatServiceImpl implements StatService {
         stat.setApp(request.getApp());
         stat.setUri(request.getUri());
         stat.setIp(request.getIp());
-        stat.setCreated(request.getTimestamp());
+        stat.setCreated(LocalDateTime.now());
 
         stat = statRepository.save(stat);
 
         request.setId(stat.getId());
+        request.setTimestamp(stat.getCreated());
 
         return request;
     }

@@ -1,27 +1,28 @@
 server:
   port: 8080
+
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5433/_db
-    username: _sa
-    password: _sa
-    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:${EWM_POSTGRES_PORT:5433}/${EWM_POSTGRES_DB:ewm}
+    username: ${EWM_POSTGRES_USER:sa}
+    password: ${EWM_POSTGRES_PASSWORD:sa}
   jpa:
-
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     show-sql: true
-    format_sql: true
     properties:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
+
+# адрес клиента статистики (по умолчанию — локально запущенный StatisticsServerApp)
+stats-server:
+  url: ${STATS_SERVER_URL:http://localhost:9090}
+
 logging:
   level:
-    org:
-      springframework:
-        orm:
-          jpa: INFO
-          JpaTransactionManager: DEBUG
-        transaction: INFO
-        transaction.interceptor: TRACE
+    org.springframework.orm:
+      jpa: INFO
+      JpaTransactionManager: DEBUG
+    org.springframework.transaction: INFO
+    org.springframework.transaction.interceptor: TRACE
