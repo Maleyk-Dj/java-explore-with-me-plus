@@ -48,7 +48,7 @@
 							"    }\r",
 							"};\r",
 							"\r",
-							"const interval = setInterval(() => {}, 1000);\r",
+							"const interval = setInterval(() => {}, 2000);\r",
 							"\r",
 							"setTimeout(async () => {\r",
 							"    try {\r",
@@ -169,7 +169,7 @@
 							"    }\r",
 							"};\r",
 							"\r",
-							"const interval = setInterval(() => {}, 1000);\r",
+							"const interval = setInterval(() => {}, 2000);\r",
 							"\r",
 							"setTimeout(async () => {\r",
 							"    try {\r",
@@ -243,110 +243,6 @@
 			"response": []
 		},
 		{
-			"name": "Delete comment user",
-			"event": [
-				{
-					"listen": "prerequest",
-					"script": {
-						"exec": [
-							"const main = async () => {\r",
-							"    const api = new API(pm);\r",
-							"    const rnd = new RandomUtils();\r",
-							"\r",
-							"    try {\r",
-							"        // Создание пользователя\r",
-							"        const user = await api.addUser(rnd.getUser());\r",
-							"\r",
-							"        // Создание категории\r",
-							"        const category = await api.addCategory(rnd.getCategory());\r",
-							"\r",
-							"        // Создание события\r",
-							"        let event = await api.addEvent(user.id, rnd.getEvent(category.id));\r",
-							"\r",
-							"        // Публикация события\r",
-							"        event = await api.publishEvent(event.id);\r",
-							"\r",
-							"        // Создание комментарии\r",
-							"        const comment = await api.addComment(user.id, event.id, rnd.getComment());\r",
-							"\r",
-							"        // Сохраняем переменные\r",
-							"        pm.collectionVariables.set(\"test_user_id\", user.id);\r",
-							"        pm.collectionVariables.set(\"test_event_id\", event.id);\r",
-							"        pm.collectionVariables.set(\"test_comment_id\", comment.id);\r",
-							"\r",
-							"        console.log(\"✅ Подготовка завершена:\");\r",
-							"        console.log(\"👤 Пользователь ID:\", user.id);\r",
-							"        console.log(\"📅 Событие ID:\", event.id);\r",
-							"        console.log(\"📅 Комментарий (для удаления):\", comment);\r",
-							"\r",
-							"    } catch (err) {\r",
-							"        console.error(\"❌ Ошибка при создании тестовых данных:\", err);\r",
-							"    }\r",
-							"};\r",
-							"\r",
-							"const interval = setInterval(() => {}, 1000);\r",
-							"\r",
-							"setTimeout(async () => {\r",
-							"    try {\r",
-							"        await main();\r",
-							"    } catch (e) {\r",
-							"        console.error(e);\r",
-							"    } finally {\r",
-							"        clearInterval(interval);\r",
-							"    }\r",
-							"}, 100);\r",
-							""
-						],
-						"type": "text/javascript",
-						"packages": {},
-						"requests": {}
-					}
-				},
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Ответ должен содержать код статуса 204\", function () {\r",
-							"    pm.response.to.have.status(204);\r",
-							"});\r",
-							""
-						],
-						"type": "text/javascript",
-						"packages": {},
-						"requests": {}
-					}
-				}
-			],
-			"request": {
-				"method": "DELETE",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"type": "text"
-					},
-					{
-						"key": "Accept",
-						"value": "application/json",
-						"type": "text"
-					}
-				],
-				"url": {
-					"raw": "{{baseUrl}}/users/{{test_user_id}}/comment/{{test_comment_id}}",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"users",
-						"{{test_user_id}}",
-						"comment",
-						"{{test_comment_id}}"
-					]
-				}
-			},
-			"response": []
-		},
-		{
 			"name": "Get comments user",
 			"event": [
 				{
@@ -389,7 +285,7 @@
 							"    }\r",
 							"};\r",
 							"\r",
-							"const interval = setInterval(() => {}, 1000);\r",
+							"const interval = setInterval(() => {}, 2000);\r",
 							"\r",
 							"setTimeout(async () => {\r",
 							"    try {\r",
@@ -494,7 +390,7 @@
 							"    }\r",
 							"};\r",
 							"\r",
-							"const interval = setInterval(() => {}, 1000);\r",
+							"const interval = setInterval(() => {}, 2000);\r",
 							"\r",
 							"setTimeout(async () => {\r",
 							"    try {\r",
@@ -599,7 +495,7 @@
 							"    }\r",
 							"};\r",
 							"\r",
-							"const interval = setInterval(() => {}, 1000);\r",
+							"const interval = setInterval(() => {}, 2000);\r",
 							"\r",
 							"setTimeout(async () => {\r",
 							"    try {\r",
@@ -721,7 +617,7 @@
 							"    }\r",
 							"};\r",
 							"\r",
-							"const interval = setInterval(() => {}, 1000);\r",
+							"const interval = setInterval(() => {}, 2000);\r",
 							"\r",
 							"setTimeout(async () => {\r",
 							"    try {\r",
@@ -785,6 +681,110 @@
 					"path": [
 						"admin",
 						"comments"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete comment user",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const main = async () => {\r",
+							"    const api = new API(pm);\r",
+							"    const rnd = new RandomUtils();\r",
+							"\r",
+							"    try {\r",
+							"        // Создание пользователя\r",
+							"        const user = await api.addUser(rnd.getUser());\r",
+							"\r",
+							"        // Создание категории\r",
+							"        const category = await api.addCategory(rnd.getCategory());\r",
+							"\r",
+							"        // Создание события\r",
+							"        let event = await api.addEvent(user.id, rnd.getEvent(category.id));\r",
+							"\r",
+							"        // Публикация события\r",
+							"        event = await api.publishEvent(event.id);\r",
+							"\r",
+							"        // Создание комментарии\r",
+							"        const comment = await api.addComment(user.id, event.id, rnd.getComment());\r",
+							"\r",
+							"        // Сохраняем переменные\r",
+							"        pm.collectionVariables.set(\"test_user_id\", user.id);\r",
+							"        pm.collectionVariables.set(\"test_event_id\", event.id);\r",
+							"        pm.collectionVariables.set(\"test_comment_id\", comment.id);\r",
+							"\r",
+							"        console.log(\"✅ Подготовка завершена:\");\r",
+							"        console.log(\"👤 Пользователь ID:\", user.id);\r",
+							"        console.log(\"📅 Событие ID:\", event.id);\r",
+							"        console.log(\"📅 Комментарий (для удаления):\", comment);\r",
+							"\r",
+							"    } catch (err) {\r",
+							"        console.error(\"❌ Ошибка при создании тестовых данных:\", err);\r",
+							"    }\r",
+							"};\r",
+							"\r",
+							"const interval = setInterval(() => {}, 2000);\r",
+							"\r",
+							"setTimeout(async () => {\r",
+							"    try {\r",
+							"        await main();\r",
+							"    } catch (e) {\r",
+							"        console.error(e);\r",
+							"    } finally {\r",
+							"        clearInterval(interval);\r",
+							"    }\r",
+							"}, 100);\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Ответ должен содержать код статуса 204\", function () {\r",
+							"    pm.response.to.have.status(204);\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/users/{{test_user_id}}/comment/{{test_comment_id}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"users",
+						"{{test_user_id}}",
+						"comment",
+						"{{test_comment_id}}"
 					]
 				}
 			},
@@ -1001,7 +1001,7 @@
 	"variable": [
 		{
 			"key": "baseUrl",
-			"value": ""
+			"value": "http://localhost:8080"
 		},
 		{
 			"key": "commentText",
