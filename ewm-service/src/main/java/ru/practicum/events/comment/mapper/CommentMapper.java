@@ -18,8 +18,8 @@ public class CommentMapper {
         CommentDto dto = new CommentDto();
         dto.setId(comment.getId());
         dto.setText(comment.getText());
-        dto.setUser_id(comment.getUser().getId());
-        dto.setEvent_id(comment.getEvent().getId());
+        dto.setUserid(comment.getUser().getId());
+        dto.setEventid(comment.getEvent().getId());
 
         return dto;
     }
