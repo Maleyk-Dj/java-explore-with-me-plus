@@ -1,17 +1,18 @@
-package ru.practicum.comment.service;
+package ru.practicum.events.comment.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.comment.dto.CommentDto;
-import ru.practicum.comment.dto.DeleteCommentDto;
-import ru.practicum.comment.dto.NewCommentDto;
-import ru.practicum.comment.dto.UpdateCommentDto;
-import ru.practicum.comment.mapper.CommentMapper;
-import ru.practicum.comment.model.Comment;
-import ru.practicum.comment.repository.CommentRepository;
+import ru.practicum.events.comment.dto.CommentDto;
+import ru.practicum.events.comment.dto.DeleteCommentDto;
+import ru.practicum.events.comment.dto.CommonCommentDto;
+import ru.practicum.events.comment.mapper.CommentMapper;
+import ru.practicum.events.comment.model.Comment;
+import ru.practicum.events.comment.repository.CommentRepository;
 import ru.practicum.events.enums.EventState;
 import ru.practicum.events.model.Event;
 import ru.practicum.events.repository.EventRepository;
@@ -36,7 +37,7 @@ public class CommentServiceImpl implements CommentService {
     private final CommentMapper commentMapper;
 
     @Override
-    public CommentDto createComment(Integer userId, Integer eventId, NewCommentDto newCommentDto) {
+    public CommentDto createComment(Integer userId, Integer eventId, CommonCommentDto newCommentDto) {
         Event event = getEvent(eventId);
 
         if (!event.getState().equals(EventState.PUBLISHED))
@@ -46,7 +47,7 @@ public class CommentServiceImpl implements CommentService {
 
         Comment comment = Comment.builder()
                 .created(LocalDateTime.now())
-                .content(newCommentDto.getContent())
+                .text(newCommentDto.getText())
                 .event(event)
                 .user(user)
                 .build();
@@ -55,11 +56,11 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public CommentDto updateComment(Integer userId, Integer commentId, UpdateCommentDto updateCommentDto) {
+    public CommentDto updateComment(Integer userId, Integer commentId, CommonCommentDto updateCommentDto) {
         Comment comment = getComment(Long.valueOf(commentId));
         getCommentByUserId(userId, commentId);
 
-        comment.setContent(updateCommentDto.getContent());
+        comment.setText(updateCommentDto.getText());
 
         return commentMapper.commentToDto(commentRepository.save(comment));
     }
@@ -72,7 +73,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public List<CommentDto> getComments(String content, Integer userId, Integer eventId,
+    public List<CommentDto> getComments(String text, Integer userId, Integer eventId,
                                         String rangeStart, String rangeEnd, Integer from, Integer size) {
 
         if (userId != null) {
@@ -109,7 +110,7 @@ public class CommentServiceImpl implements CommentService {
         PageRequest pageRequest = PageRequest.of(safeFrom / safeSize, safeSize);
 
         Page<Comment> commentsPage = commentRepository.getComments(
-                content, userId, eventId, start, end, pageRequest
+                text, userId, eventId, start, end, pageRequest
         );
 
         return commentsPage.getContent()
@@ -119,9 +120,17 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public CommentDto getCommentById(Integer commentId) {
-        return commentMapper.commentToDto(getComment(Long.valueOf(commentId)));
+    public List<CommentDto> getEventComments(Integer eventId, Integer from, Integer size) {
+
+        checkEventExists(eventId);
+
+        Pageable pageable = PageRequest.of(from / size, size, Sort.by("created").descending());
+
+        Page<Comment> commentPage = commentRepository.findByEventId(eventId, pageable);
+
+        return commentMapper.commentsToDtos(commentPage.getContent());
     }
+
 
     @Override
     public List<CommentDto> getCommentsByUserId(Integer userId) {
@@ -130,6 +139,14 @@ public class CommentServiceImpl implements CommentService {
         return commentsList.stream()
                 .map(commentMapper::commentToDto)
                 .toList();
+    }
+
+    @Override
+    public List<CommentDto> getUserEventComments(Integer userId, Integer eventId) {
+
+        List<Comment> comments = commentRepository.findByUserIdAndEventIdOrderByCreatedDesc(userId, eventId);
+
+        return commentMapper.commentsToDtos(comments);
     }
 
     @Transactional
@@ -150,6 +167,14 @@ public class CommentServiceImpl implements CommentService {
         }
 
         commentRepository.deleteByIdIn(deleteCommentsDto.getCommentsIds());
+    }
+
+    @Transactional
+    @Override
+    public void deleteSingleCommentByAdmin(Integer commentId) {
+        DeleteCommentDto dto = new DeleteCommentDto();
+        dto.setCommentsIds(List.of(commentId));
+        deleteCommentByAdmin(dto);
     }
 
     private User getUser(Integer userId) {
@@ -175,5 +200,11 @@ public class CommentServiceImpl implements CommentService {
         return commentRepository.findById(commentId).orElseThrow(
                 () -> new NotFoundException("Комментария с id: " + commentId + " не существует")
         );
+    }
+
+    private void checkEventExists(Integer eventId) {
+        if (!eventRepository.existsById(eventId)) {
+            throw new NotFoundException("Событие с id=" + eventId + " не найдено");
+        }
     }
 }
